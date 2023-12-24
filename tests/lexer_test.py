@@ -20,7 +20,7 @@ def test_operators():
     assert_tokens(input, assert_input)
 
 def test_add():
-    input = """let five = 5;
+    input = """let five = 1;
 let ten = 10;
 
 let add = fn(x, y) {
@@ -42,7 +42,7 @@ if (5 < 10) {
     assert_input = [Token("LET", "let"),
         Token("IDENT", "five"),
         Token("ASSIGN", "="),
-        Token("INT", "5"),
+        Token("INT", "1"),
         Token("SEMICOLON", ";"),
         Token("LET", "let"),
         Token("IDENT", "ten"),

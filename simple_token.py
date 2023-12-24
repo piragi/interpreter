@@ -49,6 +49,7 @@ class Lexer:
     def read_char(self):
         if self.read_position >= len(self.input):
             self.char = ""
+            self.position = len(self.input)
             return
         self.char = self.input[self.read_position]
         self.position = self.read_position
@@ -123,7 +124,7 @@ class Lexer:
         literal_start = self.position
         while self.char.isnumeric():
             self.read_char()
-        return self.input[literal_start:self.position]
+        return self.input[literal_start:self.position] 
     
     def check_keyword(self, literal):
         if literal in KEYWORDS:
@@ -138,7 +139,3 @@ class Token:
     def __init__(self, type: str, literal: str):
         self.type = type
         self.literal = literal
-
-
-        
-
