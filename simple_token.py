@@ -9,15 +9,33 @@ PLUS = "+"
 # delimiters
 COMMA = ","
 SEMICOLON = ";"
-LPAREN = "("
-RPAREN = ")"
-LBRACE = "{"
-RBRACE = "}"
+LPAREN    = "("
+RPAREN    = ")"
+LBRACE    = "{"
+RBRACE    = "}"
+ASSIGN    = "="
+PLUS      = "+"
+MINUS     = "-"
+BANG      = "!"
+ASTERISK  = "*"
+SLASH     = "/"
+
+LT = "<"
+GT = ">"
+
+EQ = "=="
+NEQ = "!="
+
 # keywords
 FUNCTION = "FUNCTION"
 LET = "LET"
+TRUE = "TRUE"
+FALSE = "FALSE"
+IF = "IF"
+ELSE = "ELSE"
+RETURN = "RETURN"
 
-KEYWORDS = {"fn": FUNCTION, "let": LET}
+KEYWORDS = {"fn": FUNCTION, "let": LET, "true": TRUE, "false": FALSE, "if": IF, "else": ELSE, "return": RETURN}
 
 class Lexer:
     def __init__(self, input:str):
@@ -40,7 +58,11 @@ class Lexer:
         self.skip_whitespaces()
 
         if self.char == "=":
-            token = Token("ASSIGN", "=")
+            if self.peek_char() == "=":
+                self.read_char()
+                token = Token("EQ", "==")
+            else:
+                token = Token("ASSIGN", "=")
         elif self.char == "+":
             token = Token("PLUS", "+")
         elif self.char == "(":
@@ -55,12 +77,27 @@ class Lexer:
             token = Token("COMMA", ",")
         elif self.char == ";":
             token = Token("SEMICOLON", ";")
+        elif self.char == "-":
+            token = Token("MINUS", "-")
+        elif self.char == "!":
+            if self.peek_char() == "=":
+                self.read_char()
+                token = Token("NEQ", "!=")
+            else:
+                token = Token("BANG", "!")
+        elif self.char == "*":
+            token = Token("ASTERISK", "*")
+        elif self.char == "/":
+            token = Token("SLASH", "/")
+        elif self.char == "<":
+            token = Token("LT", "<")
+        elif self.char == ">":
+            token = Token("GT", ">")
         elif self.char == "":
             token = Token("EOF", "")
         else:
             if self.char.isalpha():
                 literal = self.read_literal()
-                # TODO: this return is weird
                 type = self.check_keyword(literal)
                 return Token(type, literal)
             elif self.char.isnumeric():
@@ -70,6 +107,11 @@ class Lexer:
                 token = Token("ILLEGAL", self.char)
         self.read_char()
         return token
+
+    def peek_char(self):
+        if self.read_position >= len(self.input):
+            return 0
+        return self.input[self.read_position]
 
     def read_literal(self):
         literal_start = self.position
