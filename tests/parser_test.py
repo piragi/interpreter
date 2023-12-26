@@ -23,7 +23,23 @@ def test_let_statements():
         assert statement.token_literal() == "let"
         assert statement.name.value == assert_statement
         assert statement.name.token_literal() == assert_statement
-    
+
+def test_return_statement():
+    test_input = """return 5;
+    return 10;
+    return 42069;"""
+
+    lexer = simple_token.Lexer(test_input)
+    parser = simple_parser.Parser(lexer)
+
+    program = parser.parse_program()
+    check_parser_errors(parser.errors)
+
+    assert len(program.statements) == 3
+
+    for statement in program.statements:
+        assert statement.token_literal() == "return"
+
 def check_parser_errors(errors):
     if len(errors) is 0:
         return

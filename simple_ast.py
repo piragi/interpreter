@@ -50,3 +50,14 @@ class LetStatement(Statement):
 
     def token_literal(self):
         return self.token.literal
+
+class ReturnStatement(Statement):
+    def __init__(self, token: Token, expression: Expression = None):
+        self.token = token
+        self.expression = expression
+    
+    def statementNode():
+        pass
+
+    def token_literal(self):
+        return self.token.literal

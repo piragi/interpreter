@@ -31,6 +31,8 @@ class Parser():
     def parse_statement(self):
         if self.current_token.type is simple_token.LET:
             return self.parse_let_statement()
+        if self.current_token.type is simple_token.RETURN:
+            return self.parse_return_statement()
         if self.current_token.type is simple_token.EOF:
             return None
     
@@ -45,6 +47,16 @@ class Parser():
         if not self.expect_peek("ASSIGN"): # TODO: needs a token dict or something
             return None
 
+        # skip expression for now
+        while self.current_token.type != "SEMICOLON": # TODO: token dict or something
+            self.next_token()
+        
+        return statement
+
+    def parse_return_statement(self):
+        statement = simple_ast.ReturnStatement(self.current_token)
+        self.next_token()
+        
         # skip expression for now
         while self.current_token.type != "SEMICOLON": # TODO: token dict or something
             self.next_token()
