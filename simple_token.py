@@ -49,9 +49,8 @@ class Lexer:
     def read_char(self):
         if self.read_position >= len(self.input):
             self.char = ""
-            self.position = len(self.input)
-            return
-        self.char = self.input[self.read_position]
+        else:
+            self.char = self.input[self.read_position]
         self.position = self.read_position
         self.read_position += 1
 
