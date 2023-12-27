@@ -70,6 +70,32 @@ def test_identifier_expression():
     assert statement.expression.value == 5
     assert statement.expression.token_literal() == "5"
 
+def test_prefix_expression():
+    test_input = ["!5;","-15;"]
+    test_expected = [["!", 5], ["-", 15]]
+
+    for input, expected in zip(test_input, test_expected):
+        lexer = simple_token.Lexer(input)
+        parser = simple_parser.Parser(lexer)
+        program = parser.parse_program()
+        check_parser_errors(parser.errors)
+
+        statement = program.statements[0]
+        assert len(program.statements) == 1
+        assert type(statement) == simple_ast.ExpressionStatement
+        assert type(statement.expression) == simple_ast.PrefixExpression
+        assert statement.expression.operator == expected[0]
+        assert integer_literal(statement.expression.right, expected[1])
+
+def integer_literal(integer_literal: simple_ast.Expression, value: int):
+    if type(integer_literal) is not simple_ast.IntegerLiteral: 
+        return False
+    if integer_literal.value != value:
+        return False
+    if integer_literal.token_literal() != str(value):
+        return False
+    return True
+
 def check_parser_errors(errors):
     if len(errors) == 0:
         return

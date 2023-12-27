@@ -15,6 +15,8 @@ class Parser():
         
         self.register_prefix(simple_token.IDENT, self.parse_identifier)
         self.register_prefix(simple_token.INT, self.parse_integer_literal)
+        self.register_prefix("BANG", self.parse_prefix_expression)
+        self.register_prefix("MINUS", self.parse_prefix_expression)
 
         self.next_token()
         self.next_token()    
@@ -89,14 +91,20 @@ class Parser():
         return literal
 
     def parse_expression(self, precedence: int):
-        print(self.current_token.type)
-        prefix = self.prefix_parse_fn[self.current_token.type]
-        if prefix is None:
+        if self.current_token.type not in self.prefix_parse_fn:
+            self.no_prefix_parse_fn_error(self.current_token.type)
             return None
+        prefix = self.prefix_parse_fn[self.current_token.type]
 
         left_expression = prefix()
-        print(left_expression.value)
+        #print(left_expression.value)
         return left_expression
+    
+    def parse_prefix_expression(self):
+        expression = simple_ast.PrefixExpression(self.current_token, self.current_token.literal)
+        self.next_token()
+        expression.right = self.parse_expression(PRECEDENCE["PREFIX"])
+        return expression
 
     def expect_peek(self, expected: str):
         if self.peek_token.type is expected:
@@ -108,4 +116,8 @@ class Parser():
 
     def peek_errors(self, token_type):
         msg = f'expected next token to be {token_type}, got {self.peek_token.type} instead'
+        self.errors.append(msg)
+
+    def no_prefix_parse_fn_error(self, token_type: str):
+        msg = f'no prefix parse function for {token_type} found'
         self.errors.append(msg)
