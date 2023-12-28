@@ -109,3 +109,12 @@ class InfixExpression(Expression):
     def expressionNode(): pass
     def token_literal(self): return self.token.literal
     def string(self): return f'({self.left.string()} {self.operator} {self.right.string()})'
+
+class Boolean(Expression):
+    def __init__(self, token: Token, value: bool):
+        self.token = token
+        self.value = value
+    
+    def expressionNode(): pass
+    def token_literal(self): return self.token.literal
+    def string(self): return self.token.literal

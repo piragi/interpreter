@@ -19,6 +19,9 @@ class Parser():
         self.register_prefix("INT", self.parse_integer_literal)
         self.register_prefix("BANG", self.parse_prefix_expression)
         self.register_prefix("MINUS", self.parse_prefix_expression)
+        self.register_prefix("TRUE", self.parse_boolean)
+        self.register_prefix("FALSE", self.parse_boolean)
+        self.register_prefix("LPAREN", self.parse_grouped_expression)
 
         self.register_infix("EQ", self.parse_infix_expression)
         self.register_infix("NEQ", self.parse_infix_expression)
@@ -132,6 +135,15 @@ class Parser():
         precedence = self.current_precedence()
         self.next_token()
         expression.right = self.parse_expression(precedence)
+        return expression
+    
+    def parse_boolean(self): return simple_ast.Boolean(self.current_token, self.current_token.type == simple_token.TRUE)
+
+    def parse_grouped_expression(self):
+        self.next_token()
+        expression = self.parse_expression(PRECEDENCE["LOWEST"])
+        if not self.expect_peek("RPAREN"):
+            return None
         return expression
 
     def expect_peek(self, expected: str):
