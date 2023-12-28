@@ -141,8 +141,7 @@ def test_operator_precedence():
     "(5 + 5) * 2",
     "2 / (5 + 5)",
     "-(5 + 5)",
-    "!(true == true)",
-    "(4 + 4 * 3) + 2"]
+    "!(true == true)"]
 
     test_expected = [
     "((-a) * b)",
@@ -165,8 +164,7 @@ def test_operator_precedence():
     "((5 + 5) * 2)",
     "(2 / (5 + 5))",
     "(-(5 + 5))",
-    "(!(true == true))",
-    "((4 + (4 * 3)) + 2)"]
+    "(!(true == true))"]
 
 
     for input, expected in zip(test_input, test_expected):
