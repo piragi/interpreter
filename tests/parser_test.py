@@ -86,6 +86,62 @@ def test_prefix_expression():
         assert type(statement.expression) == simple_ast.PrefixExpression
         assert statement.expression.operator == expected[0]
         assert integer_literal(statement.expression.right, expected[1])
+    
+def test_infix_expression():
+    test_input = ["5 + 5", "5 - 5", "5 * 5", "5 / 5", "5 > 5", "5 < 5", "5 == 5", "5 != 5"]
+    test_expected = [[5, "+", 5], [5, "-", 5], [5, "*", 5], [5, "/", 5], [5, ">", 5], [5, "<", 5], [5, "==", 5], [5, "!=", 5]]
+
+    for input, expected in zip(test_input, test_expected):
+        lexer = simple_token.Lexer(input)
+        parser = simple_parser.Parser(lexer)
+        program = parser.parse_program()
+        check_parser_errors(parser.errors)
+
+        statement = program.statements[0]
+        assert len(program.statements) == 1
+        assert type(statement) == simple_ast.ExpressionStatement
+        assert type(statement.expression) == simple_ast.InfixExpression
+        assert integer_literal(statement.expression.left, expected[0])
+        assert statement.expression.operator == expected[1]
+        assert integer_literal(statement.expression.right, expected[2])
+    
+def test_operator_precedence():
+    test_input = [
+    "-a * b",
+    "!-a",
+    "a + b + c",
+    "a + b - c",
+    "a * b * c",
+    "a * b / c",
+    "a + b / c",
+    "a + b * c + d / e - f",
+    "3 + 4; -5 * 5",
+    "5 > 4 == 3 < 4",
+    "5 < 4 != 3 > 4",
+    "3 + 4 * 5 == 3 * 1 + 4 * 5"]
+
+    test_expected = [
+    "((-a) * b)",
+    "(!(-a))",
+    "((a + b) + c)",
+    "((a + b) - c)",
+    "((a * b) * c)",
+    "((a * b) / c)",
+    "(a + (b / c))",
+    "(((a + (b * c)) + (d / e)) - f)",
+    "(3 + 4)((-5) * 5)",
+    "((5 > 4) == (3 < 4))",
+    "((5 < 4) != (3 > 4))",
+    "((3 + (4 * 5)) == ((3 * 1) + (4 * 5)))"]
+
+
+    for input, expected in zip(test_input, test_expected):
+        lexer = simple_token.Lexer(input)
+        parser = simple_parser.Parser(lexer)
+        program = parser.parse_program()
+        check_parser_errors(parser.errors)
+
+        assert program.string() == expected
 
 def integer_literal(integer_literal: simple_ast.Expression, value: int):
     if type(integer_literal) is not simple_ast.IntegerLiteral: 

@@ -90,7 +90,7 @@ class IntegerLiteral(Expression):
     def string(self): return self.token.literal
 
 class PrefixExpression(Expression):
-    def __init__(self, token: Token, operator: str = Expression, right: Expression = None):
+    def __init__(self, token: Token, operator: str = None, right: Expression = None):
         self.token = token
         self.operator = operator
         self.right = right
@@ -98,3 +98,14 @@ class PrefixExpression(Expression):
     def expressionNode(): pass
     def token_literal(self): return self.token.literal
     def string(self): return f'({self.operator}{self.right.string()})'
+
+class InfixExpression(Expression):
+    def __init__(self, token: Token, left: Expression = None, operator: str = None, right: Expression = None):
+        self.token = token
+        self.left = left
+        self.operator = operator
+        self.right = right
+    
+    def expressionNode(): pass
+    def token_literal(self): return self.token.literal
+    def string(self): return f'({self.left.string()} {self.operator} {self.right.string()})'
