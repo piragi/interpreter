@@ -22,6 +22,7 @@ class Parser():
         self.register_prefix("TRUE", self.parse_boolean)
         self.register_prefix("FALSE", self.parse_boolean)
         self.register_prefix("LPAREN", self.parse_grouped_expression)
+        self.register_prefix("IF", self.parse_if_expression)
 
         self.register_infix("EQ", self.parse_infix_expression)
         self.register_infix("NEQ", self.parse_infix_expression)
@@ -53,7 +54,6 @@ class Parser():
             if statement is not None:
                 program.statements.append(statement)
             self.next_token()
-
         return program
 
     def parse_statement(self):
@@ -121,7 +121,6 @@ class Parser():
             infix = self.infix_parse_fn[self.peek_token.type]
             self.next_token()
             left_expression = infix(left_expression)
-
         return left_expression
     
     def parse_prefix_expression(self):
@@ -142,9 +141,34 @@ class Parser():
     def parse_grouped_expression(self):
         self.next_token()
         expression = self.parse_expression(PRECEDENCE["LOWEST"])
-        if not self.expect_peek("RPAREN"):
-            return None
+        if not self.expect_peek("RPAREN"): return None
         return expression
+    
+    def parse_if_expression(self):
+        expression = simple_ast.IfExpression(self.current_token) 
+        if not self.expect_peek("LPAREN"): return None
+        self.next_token()
+        expression.condition = self.parse_expression(PRECEDENCE["LOWEST"])
+
+        if not self.expect_peek("RPAREN"): return None
+        if not self.expect_peek("LBRACE"): return None
+        expression.consequence = self.parse_block_statement()
+
+        if self.peek_token.type== "ELSE":
+            self.next_token()
+            if not self.expect_peek("LBRACE"): return None
+            expression.alternative = self.parse_block_statement()
+        return expression
+
+    def parse_block_statement(self):
+        block_statements = simple_ast.BlockStatement(self.current_token)
+        self.next_token()
+
+        while self.current_token.type != "RBRACE" and self.current_token.type != "EOF":
+            statement = self.parse_statement()
+            if statement is not None: block_statements.statements.append(statement)
+            self.next_token()
+        return block_statements
 
     def expect_peek(self, expected: str):
         if self.peek_token.type is expected:

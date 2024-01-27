@@ -7,7 +7,7 @@ class Node():
 class Statement(Node):
     def statemenetNode(): raise NotImplementedError("Subclasses should implement the statementNode method")
 
-class Expression(Node):
+class Expression(Node): 
     def expressionNode(): raise NotImplementedError("Subclasses should implement the expressionNode method")
 
 class Program():
@@ -118,3 +118,27 @@ class Boolean(Expression):
     def expressionNode(): pass
     def token_literal(self): return self.token.literal
     def string(self): return self.token.literal
+
+class BlockStatement(Statement):
+    def __init__(self, token: Token):
+        self.token = token #{ token
+        self.statements = []
+    
+    def statemenetNode(): pass
+    def token_literal(self): self.token.literal
+    def string(self): return ''.join(statement.string() for statement in self.statements)
+
+class IfExpression(Expression):
+    def __init__(self, token: Token):
+        self.token = token
+        self.condition: Expression = None
+        self.consequence: BlockStatement = None
+        self.alternative: BlockStatement = None
+
+    def expressionNode(): pass
+    def token_literal(self): return self.token.literal
+    def string(self):
+        string = f'if {self.condition.string()} {self.consequence.string()}'
+        if self.alternative is not None:
+            string += f'else {self.alternative.string()}'
+        return string

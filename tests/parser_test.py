@@ -175,6 +175,43 @@ def test_operator_precedence():
         print(expected)
         assert program.string() == expected
 
+def test_if():
+    test_input = 'if (x < y) { x }'
+    lexer = simple_token.Lexer(test_input)
+    parser = simple_parser.Parser(lexer)
+    program = parser.parse_program()
+    statement = program.statements[0]
+    check_parser_errors(parser.errors)
+
+    assert len(program.statements) == 1, f'program.statements does not contain 1 statements, got={len(program.statments)}'
+    assert type(statement) == simple_ast.ExpressionStatement, f'program.statements[0] is not ExpressionStatement, got={type(statement)}'
+    assert type(statement.expression) == simple_ast.IfExpression, f'statement.expression is not IfExpression, got={type(statement.expression)}'
+    assert infix_expression(statement.expression.condition, "x", "<", "y"), f'condition does not match, got={statement.expression.condition.string()}'
+    assert len(statement.expression.consequence.statements) == 1, f'consequence.statements does not contain 1 statements, got={len(statement.expression.consequence.statements)}'
+    consequence_statement = statement.expression.consequence.statements[0]
+    assert type(consequence_statement) == simple_ast.ExpressionStatement, f'consequence statement is not ExpressionStatement, got={type(consequence_statement)}'
+    assert identifier(consequence_statement.expression, "x"), f'consequence does not match, got={consequence_statement.string()}'
+
+def test_if_else():
+    test_input = 'if (x < y) { x } else { y }'
+    lexer = simple_token.Lexer(test_input)
+    parser = simple_parser.Parser(lexer)
+    program = parser.parse_program()
+    statement = program.statements[0]
+    check_parser_errors(parser.errors)
+
+    assert len(program.statements) == 1, f'program.statements does not contain 1 statements, got={len(program.statments)}'
+    assert type(statement) == simple_ast.ExpressionStatement, f'program.statements[0] is not ExpressionStatement, got={type(statement)}'
+    assert type(statement.expression) == simple_ast.IfExpression, f'statement.expression is not IfExpression, got={type(statement.expression)}'
+    assert infix_expression(statement.expression.condition, "x", "<", "y"), f'condition does not match, got={statement.expression.condition.string()}'
+    assert len(statement.expression.consequence.statements) == 1, f'consequence.statements does not contain 1 statements, got={len(statement.expression.consequence.statements)}'
+    consequence_statement = statement.expression.consequence.statements[0]
+    assert type(consequence_statement) == simple_ast.ExpressionStatement, f'consequence statement is not ExpressionStatement, got={type(consequence_statement)}'
+    assert identifier(consequence_statement.expression, "x"), f'consequence does not match, got={statement.expression.condition.string()}'
+    alternative_statement = statement.expression.alternative.statements[0]
+    assert type(alternative_statement) == simple_ast.ExpressionStatement, f'alternative statement is not ExpressionStatement, got={type(alternative_statement)}'
+    assert identifier(alternative_statement.expression, "y"), f'alternative does not match, got={alternative_statement.string()}'
+
 def integer_literal(integer_literal: simple_ast.Expression, value: int):
     if type(integer_literal) is not simple_ast.IntegerLiteral: 
         return False
