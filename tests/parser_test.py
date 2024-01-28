@@ -172,7 +172,6 @@ def test_operator_precedence():
         parser = simple_parser.Parser(lexer)
         program = parser.parse_program()
         check_parser_errors(parser.errors)
-        print(expected)
         assert program.string() == expected
 
 def test_if():
@@ -212,6 +211,47 @@ def test_if_else():
     assert type(alternative_statement) == simple_ast.ExpressionStatement, f'alternative statement is not ExpressionStatement, got={type(alternative_statement)}'
     assert identifier(alternative_statement.expression, "y"), f'alternative does not match, got={alternative_statement.string()}'
 
+def test_functions():
+    test_input = ['fn (x, y) { x + y; }', 'fn () { x + y; }', 'fn (x, y, z) { x + y; }']
+    expected_params = [['x', 'y'], [], ['x', 'y', 'z']]
+
+    for input, param in zip(test_input, expected_params):
+        function_with_params(input, param)
+
+def test_call_expression():
+    test_input = 'add(1, 2 * 3, 4 + 5);'
+    lexer = simple_token.Lexer(test_input)
+    parser = simple_parser.Parser(lexer)
+    program = parser.parse_program()
+    statement = program.statements[0]
+    check_parser_errors(parser.errors)
+
+    assert len(program.statements) == 1, f'program.statements does not contain 1 statements, got={len(program.statments)}'
+    assert type(statement) == simple_ast.ExpressionStatement, f'program.statements[0] is not ExpressionStatement, got={type(statement)}'
+    assert type(statement.expression) == simple_ast.CallExpression, f'statement.expression is not CallExpression, got={type(statement.expression)}'
+    assert identifier(statement.expression.function, "add"), f'callable identifier does not match. should be add, got={statement.expression.function.string()}'
+    assert len(statement.expression.arguments) == 3; f'callable parameters are wrong. should be 3, got={len(statement.expression.arguments)}'
+    assert literal_expression(statement.expression.arguments[0], 1)
+    assert infix_expression(statement.expression.arguments[1], 2, "*", 3)
+    assert infix_expression(statement.expression.arguments[2], 4, "+", 5)
+
+def function_with_params(test_input, parameters):
+    lexer = simple_token.Lexer(test_input)
+    parser = simple_parser.Parser(lexer)
+    program = parser.parse_program()
+    statement = program.statements[0]
+    check_parser_errors(parser.errors)
+
+    assert len(program.statements) == 1, f'program.statements does not contain 1 statements, got={len(program.statments)}'
+    assert type(statement) == simple_ast.ExpressionStatement, f'program.statements[0] is not ExpressionStatement, got={type(statement)}'
+    assert type(statement.expression) == simple_ast.FunctionLiteral, f'statement.expression is not FunctionLiteral, got={type(statement.expression)}'
+    assert len(statement.expression.parameters) == len(parameters), f'function literal parameters wrong. should be {len(parameters)}, got={len(statement.expression.parameters)}'
+    for i, parameter in enumerate(parameters):
+        assert identifier(statement.expression.parameters[i], parameter), f'parameter identifier wrong. should be {parameter}, got={statement.expression.parameters[i]}'
+    assert len(statement.expression.body.statements) == 1, f'function literal body wrong. should be 1, got={len(statement.expression.body)}'
+    assert type(statement.expression.body) == simple_ast.BlockStatement, f'body is not BlockStatement, got={type(statement.expression.body)}'
+    assert infix_expression(statement.expression.body.statements[0].expression, "x", "+", "y"), f'function literal body expression wrong. should be "(x + y)" , got={statement.expression.body.statements[0].string()}'
+
 def integer_literal(integer_literal: simple_ast.Expression, value: int):
     if type(integer_literal) is not simple_ast.IntegerLiteral: 
         return False
@@ -223,7 +263,6 @@ def integer_literal(integer_literal: simple_ast.Expression, value: int):
 
 def identifier(expression: simple_ast.Expression, value: str):
     if type(expression) is not simple_ast.Identifier:
-        print("2")
         return False
     if expression.value != value:
         return False

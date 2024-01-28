@@ -142,3 +142,23 @@ class IfExpression(Expression):
         if self.alternative is not None:
             string += f'else {self.alternative.string()}'
         return string
+
+class FunctionLiteral(Expression):
+    def __init__(self, token: Token):
+        self.token = token
+        self.parameters = []
+        self.body: BlockStatement = None
+
+    def expressionNode(): pass
+    def token_literal(self): return self.token.literal
+    def string(self): return f'fn ({"".join(parameter.string() for parameter in self.parameters)}) {{ {self.consequence.string()} }}'
+
+class CallExpression(Expression):
+    def __init__(self, token: Token, function: Expression):
+        self.token = token #the '(' token
+        self.function = function
+        self.arguments: Expression = []
+    
+    def expressionNode(): pass
+    def token_literal(self): return self.token.literal
+    def string(self): return f'{self.function.string()}({", ".join(argument.string() for argument in self.arguments)})'
