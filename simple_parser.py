@@ -51,7 +51,7 @@ class Parser():
     def parse_program(self) -> Program: 
         program = Program()
         
-        while self.current_token.type is not "EOF":
+        while self.current_token.type != "EOF":
             statement = self.parse_statement()
             if statement is not None:
                 program.statements.append(statement)
@@ -59,9 +59,9 @@ class Parser():
         return program
 
     def parse_statement(self):
-        if self.current_token.type is "LET":
+        if self.current_token.type == "LET":
             return self.parse_let_statement()
-        elif self.current_token.type is "RETURN":
+        elif self.current_token.type == "RETURN":
             return self.parse_return_statement()
         else:
             return self.parse_expression_statement()
@@ -69,28 +69,19 @@ class Parser():
     def parse_let_statement(self):
         statement = simple_ast.LetStatement(self.current_token, None, None)
 
-        if not self.expect_peek("IDENT"):
-            return None
-        
+        if not self.expect_peek("IDENT"): return None
         statement.name = simple_ast.Identifier(self.current_token, self.current_token.literal)
-
-        if not self.expect_peek("ASSIGN"): # TODO: needs a token dict or something
-            return None
-
-        # skip expression for now
-        while self.current_token.type != "SEMICOLON": # TODO: token dict or something
-            self.next_token()
-        
+        if not self.expect_peek("ASSIGN"): return None
+        self.next_token()
+        statement.value = self.parse_expression(PRECEDENCE["LOWEST"])
+        if self.peek_token.type == "SEMICOLON": self.next_token()
         return statement
 
     def parse_return_statement(self):
         statement = simple_ast.ReturnStatement(self.current_token)
         self.next_token()
-        
-        # skip expression for now
-        while self.current_token.type != "SEMICOLON": # TODO: token dict or something
-            self.next_token()
-        
+        statement.return_value = self.parse_expression(PRECEDENCE["LOWEST"])
+        if self.peek_token.type == "SEMICOLON": self.next_token()
         return statement
     
     def parse_expression_statement(self):

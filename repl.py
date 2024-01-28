@@ -1,4 +1,5 @@
 from simple_token import Lexer, EOF
+from simple_parser import Parser
 
 
 PROMPT = ">> "
@@ -10,10 +11,18 @@ class Repl():
             if repl_input == "quit" or repl_input == "q":
                 return
             lexer = Lexer(repl_input)
-            token = lexer.next_token()
-            while token.type is not EOF:
-                print(f'{token.type}: {token.literal}')
-                token = lexer.next_token()
+            parser = Parser(lexer)
+            program = parser.parse_program()
+            if not self.check_for_errors(parser.errors): continue
+            print(f'{program.string()}')
+
+    def check_for_errors(self, errors):
+        if len(errors) == 0:
+            return True
+    
+        print(f'parser has {len(errors)} error(s).')
+        for error in errors:
+            print(f'parser error: {error}')
 
 repl = Repl()
 repl.scan()

@@ -53,17 +53,17 @@ class LetStatement(Statement):
         return out
 
 class ReturnStatement(Statement):
-    def __init__(self, token: Token, expression: Expression = None):
+    def __init__(self, token: Token, return_value: Expression = None):
         self.token = token
-        self.expression = expression
+        self.return_value = return_value
     
     def statementNode(): pass
     def token_literal(self): return self.token.literal
 
     def string(self):
         out = f'{self.token_literal()} '
-        if self.expression is not None:
-            out += self.expression.string()
+        if self.return_value is not None:
+            out += self.return_value.string()
         out += ";"
         return out
     
