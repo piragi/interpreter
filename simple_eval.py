@@ -5,30 +5,43 @@ TRUE = obj.Boolean(True)
 FALSE = obj.Boolean(False)
 
 class Evaluator():
-    def eval(self, node: simple_ast.Node) -> obj.Object:
-        if type(node) == simple_ast.Program: return self.eval_statements(node.statements)
-        if type(node) == simple_ast.ExpressionStatement: return self.eval(node.expression)
+    def eval(self, node: simple_ast.Node, environment: obj.Environment) -> obj.Object:
+        if type(node) == simple_ast.Program: return self.eval_statements(node.statements, environment)
+        if type(node) == simple_ast.ExpressionStatement: return self.eval(node.expression, environment)
         if type(node) == simple_ast.IntegerLiteral: return obj.Integer(node.value)
         if type(node) == simple_ast.Boolean: return self.native_bool_to_object(node.value)
-        if type(node) == simple_ast.PrefixExpression: return self.eval_prefix_expression(node.operator, self.eval(node.right))
-        if type(node) == simple_ast.InfixExpression: return self.eval_infix_expression(node.operator, self.eval(node.left), self.eval(node.right))
-        if type(node) == simple_ast.BlockStatement: return self.eval_block_statements(node.statements)
-        if type(node) == simple_ast.IfExpression: return self.eval_if_expression(node)
-        if type(node) == simple_ast.ReturnStatement: return self.eval_return_statement(self.eval(node.value))
+        if type(node) == simple_ast.PrefixExpression: return self.eval_prefix_expression(node.operator, self.eval(node.right, environment))
+        if type(node) == simple_ast.InfixExpression: return self.eval_infix_expression(node.operator, self.eval(node.left, environment), self.eval(node.right, environment))
+        if type(node) == simple_ast.BlockStatement: return self.eval_block_statements(node.statements, environment)
+        if type(node) == simple_ast.IfExpression: return self.eval_if_expression(node, environment)
+        if type(node) == simple_ast.ReturnStatement: return self.eval_return_statement(self.eval(node.value, environment))
+        if type(node) == simple_ast.LetStatement: self.eval_let_statement(node, environment)
+        if type(node) == simple_ast.Identifier: return self.eval_identifiers(node, environment)
         return None 
 
-    def eval_statements(self, statements: list[simple_ast.Statement]):
+    def eval_statements(self, statements: list[simple_ast.Statement], environment: obj.Environment):
         for statement in statements:
-            result = self.eval(statement)
+            result = self.eval(statement, environment)
             if type(result) == obj.Return: return result.value
             if type(result) == obj.Error: return result
         return result
     
-    def eval_block_statements(self, statemenets: list[simple_ast.Statement]):
+    def eval_block_statements(self, statemenets: list[simple_ast.Statement], environment: obj.Environment):
         for statement in statemenets:
-            result = self.eval(statement)
+            result = self.eval(statement, environment)
             if type(result) == obj.Return or type(result) == obj.Error: return result
         return result
+    
+    def eval_let_statement(self, node: simple_ast.LetStatement, environment: obj.Environment):
+        value = self.eval(node.value, environment)
+        print(type(value))
+        if self.is_error(value): return value 
+        environment.set(node.name.value, value)
+    
+    def eval_identifiers(self, node: simple_ast.Identifier, environment: obj.Environment):
+        value = environment.get(node.value) 
+        if value is None: return self.new_error(f'identifier not found: {node.value}')
+        return value
     
     def native_bool_to_object(self, boolean): return TRUE if boolean else FALSE
 
@@ -72,10 +85,10 @@ class Evaluator():
         if operator == "!=": return self.native_bool_to_object(left.value != right.value)
         return self.new_error(f'unknown operator: {left.type()} {operator} {right.type()}')
     
-    def eval_if_expression(self, if_expression: simple_ast.IfExpression):
-        condition = self.eval(if_expression.condition)
-        if self.is_truthy(condition): return self.eval(if_expression.consequence)
-        elif if_expression.alternative is not None: return self.eval(if_expression.alternative) 
+    def eval_if_expression(self, if_expression: simple_ast.IfExpression, environment: obj.Environment):
+        condition = self.eval(if_expression.condition, environment)
+        if self.is_truthy(condition): return self.eval(if_expression.consequence, environment)
+        elif if_expression.alternative is not None: return self.eval(if_expression.alternative, environment) 
         return NULL
     
     def eval_return_statement(self, object: obj.Object):

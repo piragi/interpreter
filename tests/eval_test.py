@@ -93,19 +93,32 @@ def test_error_handling():
             ( "true + false;", "unknown operator: BOOLEAN + BOOLEAN" ),
             ( "5; true + false; 5", "unknown operator: BOOLEAN + BOOLEAN" ),
             ( "if (10 > 1) { true + false; }", "unknown operator: BOOLEAN + BOOLEAN" ),
-            ( """if (10 > 1) { if (10 > 1) { return true + false; } return 1; } """ , "unknown operator: BOOLEAN + BOOLEAN" )]
+            ( """if (10 > 1) { if (10 > 1) { return true + false; } return 1; } """ , "unknown operator: BOOLEAN + BOOLEAN" ),
+            ( "foobar", "identifier not found: foobar" )]
 
     for input, expected in tests:
         print(f'current test: {input}')
         evaluated = evaluate(input)
         check_error_message(evaluated, expected)
 
+def test_let_statements():
+    tests = [("let a = 5; a;", 5),
+        ("let a = 5 * 5; a;", 25),
+        ("let a = 5; let b = a; b;", 5),
+        ("let a = 5; let b = a; let c = a + b + 5; c;", 15)]
+
+    for input, expected in tests:
+        print(f'{input}')        
+        evaluated = evaluate(input)
+        check_integer_obj(evaluated, expected)
+
 def evaluate(input):
     lexer = simple_token.Lexer(input)
     parser = simple_parser.Parser(lexer)
     program = parser.parse_program()
     evaluator = simple_eval.Evaluator()
-    return evaluator.eval(program)
+    environment = obj.Environment()
+    return evaluator.eval(program, environment)
 
 def check_integer_obj(object: obj.Object, expected):
     assert type(object) == obj.Integer, print(f'object is not Integer, got={type(object)}')

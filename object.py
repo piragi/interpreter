@@ -29,3 +29,8 @@ class Error(Object):
     def __init__(self, message: str): self.message = message
     def inspect(self): return f'ERROR: {self.message}'
     def type(self): return ERROR
+
+class Environment():
+    def __init__(self): self.dictionary: dict[str, Object] = {}
+    def get(self, key: str) -> Object: return self.dictionary[key] if key in self.dictionary else None #maybe different errorhandling?
+    def set(self, key: str, value: Object): self.dictionary[key] = value
