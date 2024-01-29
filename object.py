@@ -1,8 +1,11 @@
+import simple_ast
+
 INTEGER_OBJ = 'INTEGER'
 BOOLEAN_OBJ = 'BOOLEAN'
 NULL_OBJ = 'NULL'
 RETURN_OBJ = 'RETURN_VALUE'
 ERROR = 'ERROR'
+FUNCTION_OBJ = 'FUNCTION'
 
 class Object():
     def type(): raise NotImplementedError('Subclass should implement type() function')
@@ -31,6 +34,23 @@ class Error(Object):
     def type(self): return ERROR
 
 class Environment():
-    def __init__(self): self.dictionary: dict[str, Object] = {}
-    def get(self, key: str) -> Object: return self.dictionary[key] if key in self.dictionary else None #maybe different errorhandling?
-    def set(self, key: str, value: Object): self.dictionary[key] = value
+    def __init__(self, outer: "Environment" = None):
+        self.environment: dict[str, Object] = {} 
+        self.outer = outer
+
+    def get(self, key: str) -> Object: 
+        if key in self.environment: return self.environment[key]
+        if self.outer is not None and key in self.outer.environment: return self.outer.environment[key]
+        return None
+
+    def set(self, key: str, value: Object): self.environment[key] = value    
+
+
+class Function(Object):
+    def __init__(self, parameters: list[simple_ast.Identifier], body: simple_ast.BlockStatement, environment: Environment):
+        self.parameters = parameters
+        self.body = body
+        self.environment = environment
+
+    def inspect(self): return f'fn ({''.join(parameter for parameter in self.parameters)}) {{{'\n'.join(statement for statement in self.body)}}}'
+    def type(self): return FUNCTION_OBJ

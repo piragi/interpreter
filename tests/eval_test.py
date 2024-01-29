@@ -108,9 +108,38 @@ def test_let_statements():
         ("let a = 5; let b = a; let c = a + b + 5; c;", 15)]
 
     for input, expected in tests:
-        print(f'{input}')        
         evaluated = evaluate(input)
         check_integer_obj(evaluated, expected)
+
+def test_function_object():
+    test = "fn(x) { x + 2; };"
+    evaluated = evaluate(test)
+    assert type(evaluated) == obj.Function, print(f'object is not Function, got={type(evaluated)}')
+    assert len(evaluated.parameters) == 1, print(f'function has wrong parameters, got={len(evaluated.parameters)}')
+    assert evaluated.parameters[0].string() == "x", print(f'parameter is not \'x\', got={evaluated.parameters[0].string()}')
+    assert evaluated.body.string() == "(x + 2)", print(f'body is not \'(x + 2)\', got={evaluated.body.string()}')
+
+def test_function_application():
+    tests = [("let identity = fn(x) { x; }; identity(5);", 5),
+        ("let identity = fn(x) { return x; }; identity(5);", 5),
+        ("let double = fn(x) { x * 2; }; double(5);", 10),
+        ("let add = fn(x, y) { x + y; }; add(5, 5);", 10),
+        ("let add = fn(x, y) { x + y; }; add(5 + 5, add(5, 5));", 20),
+        ("fn(x) { x; }(5)", 5)]
+    
+    for input, expected in tests:
+        evaluated = evaluate(input)
+        check_integer_obj(evaluated, expected)
+
+def test_closure():
+    test = """let newAdder = fn(x) {
+  fn(y) { x + y };
+};
+
+let addTwo = newAdder(2);
+addTwo(2);"""
+    evaluated = evaluate(test)
+    check_integer_obj(evaluated, 4)
 
 def evaluate(input):
     lexer = simple_token.Lexer(input)

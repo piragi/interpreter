@@ -4,6 +4,7 @@ NULL = obj.Null()
 TRUE = obj.Boolean(True)
 FALSE = obj.Boolean(False)
 
+#TODO: this does not need to be a class
 class Evaluator():
     def eval(self, node: simple_ast.Node, environment: obj.Environment) -> obj.Object:
         if type(node) == simple_ast.Program: return self.eval_statements(node.statements, environment)
@@ -17,6 +18,8 @@ class Evaluator():
         if type(node) == simple_ast.ReturnStatement: return self.eval_return_statement(self.eval(node.value, environment))
         if type(node) == simple_ast.LetStatement: self.eval_let_statement(node, environment)
         if type(node) == simple_ast.Identifier: return self.eval_identifiers(node, environment)
+        if type(node) == simple_ast.FunctionLiteral: return self.eval_function_literal(node, environment)
+        if type(node) == simple_ast.CallExpression: return self.eval_call_expression(node, environment)
         return None 
 
     def eval_statements(self, statements: list[simple_ast.Statement], environment: obj.Environment):
@@ -32,6 +35,42 @@ class Evaluator():
             if type(result) == obj.Return or type(result) == obj.Error: return result
         return result
     
+    def eval_function_literal(self, node: simple_ast.FunctionLiteral, environment: obj.Environment):
+        params = node.parameters
+        body = node.body
+        return obj.Function(params, body, environment)
+    
+    def eval_call_expression(self, node: simple_ast.CallExpression, environment: obj.Environment):
+        function = self.eval(node.function, environment)
+        if self.is_error(function): return function
+        args = self.eval_expressions(node.arguments, environment)
+        if len(args) == 1 and self.is_error(args[0]): return args[0]
+        return self.apply_function(function, args)
+    
+    def eval_expressions(self, args: list[simple_ast.Expression], environment: obj.Environment):
+        result: list[obj.Object] = []
+        for argument in args:
+            evaluated = self.eval(argument, environment)
+            if self.is_error(evaluated): return evaluated
+            result.append(evaluated)
+        return result
+    
+    def apply_function(self, function: obj.Object, args: list[obj.Object]):
+       assert type(function) == obj.Function, self.new_error(f'not a function: {type(function)}') 
+       extended_environment = self.extended_function_environment(function, args)
+       evaluated = self.eval(function.body, extended_environment)
+       return self.unwrapped_return_value(evaluated)
+    
+    def extended_function_environment(self, function: obj.Function, args: list[obj.Object]):
+        environment = obj.Environment(function.environment)
+        for i, parameter in enumerate(function.parameters): 
+            environment.set(parameter.value, args[i]) 
+        return environment
+    
+    def unwrapped_return_value(self, return_value: obj.Object):
+        if type(return_value) == obj.Return: return return_value.value 
+        return return_value
+
     def eval_let_statement(self, node: simple_ast.LetStatement, environment: obj.Environment):
         value = self.eval(node.value, environment)
         print(type(value))

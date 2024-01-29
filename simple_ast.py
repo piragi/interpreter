@@ -157,7 +157,7 @@ class CallExpression(Expression):
     def __init__(self, token: Token, function: Expression):
         self.token = token #the '(' token
         self.function = function
-        self.arguments: Expression = []
+        self.arguments = list[Expression]
     
     def expressionNode(): pass
     def token_literal(self): return self.token.literal
