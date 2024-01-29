@@ -1,5 +1,6 @@
 from simple_token import Lexer, EOF
 from simple_parser import Parser
+from simple_eval import Evaluator
 
 
 PROMPT = ">> "
@@ -14,7 +15,9 @@ class Repl():
             parser = Parser(lexer)
             program = parser.parse_program()
             if not self.check_for_errors(parser.errors): continue
-            print(f'{program.string()}')
+            evaluator = Evaluator()
+            evaluated = evaluator.eval(program)
+            if evaluated is not None: print(f'{evaluated.inspect()}')
 
     def check_for_errors(self, errors):
         if len(errors) == 0:

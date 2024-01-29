@@ -39,7 +39,7 @@ def test_return_statement():
     assert_expressions = [5, 10, 42069]
     for i, statement in enumerate(program.statements):
         assert statement.token_literal() == "return"
-        assert statement.return_value.value == assert_expressions[i]
+        assert statement.value.value == assert_expressions[i]
     
 def test_identifier_expression():
     test_input = """foobar;"""

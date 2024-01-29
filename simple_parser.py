@@ -80,7 +80,7 @@ class Parser():
     def parse_return_statement(self):
         statement = simple_ast.ReturnStatement(self.current_token)
         self.next_token()
-        statement.return_value = self.parse_expression(PRECEDENCE["LOWEST"])
+        statement.value = self.parse_expression(PRECEDENCE["LOWEST"])
         if self.peek_token.type == "SEMICOLON": self.next_token()
         return statement
     
