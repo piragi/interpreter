@@ -1,3 +1,4 @@
+from typing import Callable
 import simple_ast
 
 INTEGER_OBJ = 'INTEGER'
@@ -7,6 +8,7 @@ RETURN_OBJ = 'RETURN_VALUE'
 ERROR = 'ERROR'
 FUNCTION_OBJ = 'FUNCTION'
 STRING_OBJ = 'STRING'
+BUILTIN_OBJ = 'BUILTIN'
 
 class Object():
     def type(): raise NotImplementedError('Subclass should implement type() function')
@@ -45,6 +47,11 @@ class Environment():
         return None
 
     def set(self, key: str, value: Object): self.environment[key] = value    
+
+class Builtin(Object):
+    def __init__(self, builtin: Callable[[list[Object]], Object]): self.builtin = builtin 
+    def inspect(self): return 'builtin function'
+    def type(self): BUILTIN_OBJ
 
 class Function(Object):
     def __init__(self, parameters: list[simple_ast.Identifier], body: simple_ast.BlockStatement, environment: Environment):

@@ -154,6 +154,18 @@ def test_string_concatenation():
     assert type(evaluated) == obj.String, print(f'object is not String, got={type(evaluated)}')
     assert evaluated.value == "Hello World!", print(f'object has wrong value, should be {test}, got={evaluated.value}')
 
+def test_builtin_len():
+    tests = [('len("")', 0),
+            ('len("four")', 4),
+            ('len("hello world")', 11),
+            ('len(1)', "argument to 'len' not supported, got INTEGER"),
+            ('len("one", "two")', "wrong number of arguments. got=2, want=1")]
+    
+    for input, expected in tests:
+        evaluated = evaluate(input)
+        if type(expected) == int: check_integer_obj(evaluated, expected)
+        if type(expected) == str: check_error_message(evaluated, expected)
+
 def evaluate(input):
     lexer = simple_token.Lexer(input)
     parser = simple_parser.Parser(lexer)

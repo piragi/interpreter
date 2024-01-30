@@ -1,4 +1,5 @@
 import simple_ast, object as obj
+import simple_builtins
 
 NULL = obj.Null()
 TRUE = obj.Boolean(True)
@@ -57,10 +58,12 @@ class Evaluator():
         return result
     
     def apply_function(self, function: obj.Object, args: list[obj.Object]):
-       assert type(function) == obj.Function, self.new_error(f'not a function: {type(function)}') 
-       extended_environment = self.extended_function_environment(function, args)
-       evaluated = self.eval(function.body, extended_environment)
-       return self.unwrapped_return_value(evaluated)
+        if type(function) == obj.Function:
+            extended_environment = self.extended_function_environment(function, args)
+            evaluated = self.eval(function.body, extended_environment)
+            return self.unwrapped_return_value(evaluated)
+        if type(function) == obj.Builtin: return function.builtin(args) 
+        else: return self.new_error(f'not a function: {type(function)}') 
     
     def extended_function_environment(self, function: obj.Function, args: list[obj.Object]):
         environment = obj.Environment(function.environment)
@@ -80,7 +83,9 @@ class Evaluator():
     
     def eval_identifiers(self, node: simple_ast.Identifier, environment: obj.Environment):
         value = environment.get(node.value) 
+        if value is None: value = simple_builtins.functions.get(node.value)
         if value is None: return self.new_error(f'identifier not found: {node.value}')
+        
         return value
     
     def native_bool_to_object(self, boolean): return TRUE if boolean else FALSE
