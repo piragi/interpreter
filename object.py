@@ -6,6 +6,7 @@ NULL_OBJ = 'NULL'
 RETURN_OBJ = 'RETURN_VALUE'
 ERROR = 'ERROR'
 FUNCTION_OBJ = 'FUNCTION'
+STRING_OBJ = 'STRING'
 
 class Object():
     def type(): raise NotImplementedError('Subclass should implement type() function')
@@ -45,7 +46,6 @@ class Environment():
 
     def set(self, key: str, value: Object): self.environment[key] = value    
 
-
 class Function(Object):
     def __init__(self, parameters: list[simple_ast.Identifier], body: simple_ast.BlockStatement, environment: Environment):
         self.parameters = parameters
@@ -54,3 +54,8 @@ class Function(Object):
 
     def inspect(self): return f'fn ({''.join(parameter for parameter in self.parameters)}) {{{'\n'.join(statement for statement in self.body)}}}'
     def type(self): return FUNCTION_OBJ
+
+class String(Object):
+    def __init__(self, value: str): self.value = value
+    def inspect(self): return self.value
+    def type(): return STRING_OBJ

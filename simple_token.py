@@ -3,6 +3,7 @@ EOF = "EOF"
 # identifiers
 IDENT = "IDENT"
 INT = "INT"
+STRING = "STRING"
 # operators
 ASSIGN = "="
 PLUS = "+"
@@ -63,38 +64,26 @@ class Lexer:
                 token = Token("EQ", "==")
             else:
                 token = Token("ASSIGN", "=")
-        elif self.char == "+":
-            token = Token("PLUS", "+")
-        elif self.char == "(":
-            token = Token("LPAREN", "(")
-        elif self.char == ")":
-            token = Token("RPAREN", ")")
-        elif self.char == "{":
-            token = Token("LBRACE", "{")
-        elif self.char == "}":
-            token = Token("RBRACE", "}")
-        elif self.char == ",":
-            token = Token("COMMA", ",")
-        elif self.char == ";":
-            token = Token("SEMICOLON", ";")
-        elif self.char == "-":
-            token = Token("MINUS", "-")
+        elif self.char == "+": token = Token("PLUS", "+")
+        elif self.char == "\"": token = Token("STRING", self.read_string())
+        elif self.char == "(": token = Token("LPAREN", "(")
+        elif self.char == ")": token = Token("RPAREN", ")")
+        elif self.char == "{": token = Token("LBRACE", "{")
+        elif self.char == "}": token = Token("RBRACE", "}")
+        elif self.char == ",": token = Token("COMMA", ",")
+        elif self.char == ";": token = Token("SEMICOLON", ";")
+        elif self.char == "-": token = Token("MINUS", "-")
         elif self.char == "!":
             if self.peek_char() == "=":
                 self.read_char()
                 token = Token("NEQ", "!=")
             else:
                 token = Token("BANG", "!")
-        elif self.char == "*":
-            token = Token("ASTERISK", "*")
-        elif self.char == "/":
-            token = Token("SLASH", "/")
-        elif self.char == "<":
-            token = Token("LT", "<")
-        elif self.char == ">":
-            token = Token("GT", ">")
-        elif self.char == "":
-            token = Token("EOF", "")
+        elif self.char == "*": token = Token("ASTERISK", "*")
+        elif self.char == "/": token = Token("SLASH", "/")
+        elif self.char == "<": token = Token("LT", "<")
+        elif self.char == ">": token = Token("GT", ">")
+        elif self.char == "": token = Token("EOF", "")
         else:
             if self.char.isalpha():
                 literal = self.read_literal()
@@ -124,6 +113,13 @@ class Lexer:
         while self.char.isnumeric():
             self.read_char()
         return self.input[literal_start:self.position] 
+    
+    def read_string(self):
+        literal_start = self.position + 1
+        self.read_char()
+        while self.char != "\"" and self.char != "":
+            self.read_char()
+        return self.input[literal_start:self.position]
     
     def check_keyword(self, literal):
         if literal in KEYWORDS:

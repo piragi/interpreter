@@ -24,6 +24,7 @@ class Parser():
         self.register_prefix("LPAREN", self.parse_grouped_expression)
         self.register_prefix("IF", self.parse_if_expression)
         self.register_prefix("FUNCTION", self.parse_function_literal)
+        self.register_prefix("STRING", self.parse_string_literal)
 
         self.register_infix("EQ", self.parse_infix_expression)
         self.register_infix("NEQ", self.parse_infix_expression)
@@ -92,12 +93,10 @@ class Parser():
             self.next_token()
         return statement
     
+    #TODO: errorhandling for type conversion into int
+    def parse_integer_literal(self): return simple_ast.IntegerLiteral(self.current_token, int(self.current_token.literal))
     def parse_identifier(self): return simple_ast.Identifier(self.current_token, self.current_token.literal)
-    
-    def parse_integer_literal(self):
-        # TODO: wrap in try, if integer cannot be converted to int add error
-        literal = simple_ast.IntegerLiteral(self.current_token, int(self.current_token.literal))
-        return literal
+    def parse_string_literal(self): return simple_ast.StringLiteral(self.current_token, self.current_token.literal)
 
     def parse_expression(self, precedence: int):
         if self.current_token.type not in self.prefix_parse_fn:

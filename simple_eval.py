@@ -20,6 +20,7 @@ class Evaluator():
         if type(node) == simple_ast.Identifier: return self.eval_identifiers(node, environment)
         if type(node) == simple_ast.FunctionLiteral: return self.eval_function_literal(node, environment)
         if type(node) == simple_ast.CallExpression: return self.eval_call_expression(node, environment)
+        if type(node) == simple_ast.StringLiteral: return obj.String(node.value)
         return None 
 
     def eval_statements(self, statements: list[simple_ast.Statement], environment: obj.Environment):

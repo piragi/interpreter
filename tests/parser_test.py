@@ -236,6 +236,19 @@ def test_call_expression():
     assert infix_expression(statement.expression.arguments[1], 2, "*", 3)
     assert infix_expression(statement.expression.arguments[2], 4, "+", 5)
 
+def test_string_literals():
+    test_input = '"hello world"'
+    lexer = simple_token.Lexer(test_input)
+    parser = simple_parser.Parser(lexer)
+    program = parser.parse_program()
+    statement = program.statements[0]
+    check_parser_errors(parser.errors)
+
+    assert len(program.statements) == 1, f'program.statements does not contain 1 statements, got={len(program.statments)}'
+    assert type(statement) == simple_ast.ExpressionStatement, f'program.statements[0] is not ExpressionStatement, got={type(statement)}'
+    assert type(statement.expression) == simple_ast.StringLiteral, f'statement.expression is not StringLiteral, got={type(statement.expression)}'
+    assert statement.expression.value == "hello world", f'literal.value is not {test_input}, got={statement.expression.value}'
+
 def function_with_params(test_input, parameters):
     lexer = simple_token.Lexer(test_input)
     parser = simple_parser.Parser(lexer)

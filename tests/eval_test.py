@@ -141,6 +141,12 @@ addTwo(2);"""
     evaluated = evaluate(test)
     check_integer_obj(evaluated, 4)
 
+def test_string_literal():
+    test = '"Hello World!"'
+    evaluated = evaluate(test)
+    assert type(evaluated) == obj.String, print(f'object is not String, got={type(evaluated)}')
+    assert evaluated.value == "Hello World!", print(f'object has wrong value, should be {test}, got={evaluated.value}')
+
 def evaluate(input):
     lexer = simple_token.Lexer(input)
     parser = simple_parser.Parser(lexer)

@@ -38,6 +38,8 @@ if (5 < 10) {
 
 10 == 10;
 10 != 9;
+"foobar"
+"foo bar"
 """
     assert_input = [Token("LET", "let"),
         Token("IDENT", "five"),
@@ -112,6 +114,8 @@ if (5 < 10) {
         Token("NEQ", "!="),
         Token("INT", "9"),
         Token("SEMICOLON", ";"),
+        Token("STRING", "foobar"),
+        Token("STRING", "foo bar"),
         Token("EOF", ""),
     ]
 
