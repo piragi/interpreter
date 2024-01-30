@@ -94,7 +94,8 @@ def test_error_handling():
             ( "5; true + false; 5", "unknown operator: BOOLEAN + BOOLEAN" ),
             ( "if (10 > 1) { true + false; }", "unknown operator: BOOLEAN + BOOLEAN" ),
             ( """if (10 > 1) { if (10 > 1) { return true + false; } return 1; } """ , "unknown operator: BOOLEAN + BOOLEAN" ),
-            ( "foobar", "identifier not found: foobar" )]
+            ( "foobar", "identifier not found: foobar" ),
+            ('"Hello" - "World"', "unknown operator: STRING - STRING",)]
 
     for input, expected in tests:
         print(f'current test: {input}')
@@ -143,6 +144,12 @@ addTwo(2);"""
 
 def test_string_literal():
     test = '"Hello World!"'
+    evaluated = evaluate(test)
+    assert type(evaluated) == obj.String, print(f'object is not String, got={type(evaluated)}')
+    assert evaluated.value == "Hello World!", print(f'object has wrong value, should be {test}, got={evaluated.value}')
+
+def test_string_concatenation():
+    test = '"Hello" + " " + "World!"'
     evaluated = evaluate(test)
     assert type(evaluated) == obj.String, print(f'object is not String, got={type(evaluated)}')
     assert evaluated.value == "Hello World!", print(f'object has wrong value, should be {test}, got={evaluated.value}')

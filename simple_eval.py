@@ -107,7 +107,12 @@ class Evaluator():
         if self.is_error(right): return right
         if type(left) == obj.Integer and type(right) == obj.Integer: return self.eval_infix_integer_expression(operator, left, right)
         if type(left) == obj.Boolean and type(right) == obj.Boolean: return self.eval_infix_boolean_expression(operator, left, right)
+        if type(left) == obj.String and type(right) == obj.String: return self.eval_infix_string_expression(operator, left, right)
         return self.new_error(f'type mismatch: {left.type()} {operator} {right.type()}')
+    
+    def eval_infix_string_expression(self, operator: str, left: obj.String, right: obj.String):
+        if operator == "+": return obj.String(f'{left.value}{right.value}')
+        return self.new_error(f'unknown operator: {left.type()} {operator} {right.type()}')
     
     def eval_infix_boolean_expression(self, operator: str, left: obj.Boolean, right: obj.Boolean):
         if operator == "==": return self.native_bool_to_object(left == right)

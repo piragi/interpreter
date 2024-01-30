@@ -58,4 +58,4 @@ class Function(Object):
 class String(Object):
     def __init__(self, value: str): self.value = value
     def inspect(self): return self.value
-    def type(): return STRING_OBJ
+    def type(self): return STRING_OBJ
