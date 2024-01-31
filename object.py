@@ -18,10 +18,12 @@ class Object():
 class Integer(Object):
     def __init__(self, value: int): self.value = value
     def type(self): return INTEGER_OBJ
+    def inspect(self): return str(self.value)
 
 class Boolean(Object):
     def __init__(self, value: bool): self.value = value
     def type(self): return BOOLEAN_OBJ
+    def inspect(self): return str(self.value)
 
 class Null(Object):
     def inspect(self): return 'null'
@@ -60,7 +62,7 @@ class Function(Object):
         self.body = body
         self.environment = environment
 
-    def inspect(self): return f'fn ({''.join(parameter for parameter in self.parameters)}) {{{'\n'.join(statement for statement in self.body)}}}'
+    def inspect(self): return f'fn ({''.join(parameter.inspect() for parameter in self.parameters)}) {{{'\n'.join(statement.inspect() for statement in self.body)}}}'
     def type(self): return FUNCTION_OBJ
 
 class String(Object):
@@ -70,5 +72,5 @@ class String(Object):
 
 class Array(Object):
     def __init__(self, elements: list[simple_ast.Expression]): self.elements = elements
-    def inspect(self): return f'[{', '.join(str(element) for element in self.elements)}]'
+    def inspect(self): return f'[{', '.join(element.inspect() for element in self.elements)}]'
     def type(self): return ARRAY_OBJ

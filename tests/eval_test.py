@@ -154,17 +154,32 @@ def test_string_concatenation():
     assert type(evaluated) == obj.String, (f'object is not String, got={type(evaluated)}')
     assert evaluated.value == "Hello World!", (f'object has wrong value, should be {test}, got={evaluated.value}')
 
-def test_builtin_len():
+def test_builtin():
     tests = [('len("")', 0),
             ('len("four")', 4),
             ('len("hello world")', 11),
             ('len(1)', "argument to 'len' not supported, got INTEGER"),
-            ('len("one", "two")', "wrong number of arguments. got=2, want=1")]
+            ('len("one", "two")', "wrong number of arguments. got=2, want=1"),
+            ('len([1, 2, 3])', 3),
+		    ('len([])', 0),
+		    ('puts("hello", "world!")', None),
+		    ('first([1, 2, 3])', 1),
+		    ('first([])', None),
+		    ('first(1)', "argument to 'first' must be ARRAY, got INTEGER"),
+		    ('last([1, 2, 3])', 3),
+		    ('last([])', None),
+		    ('last(1)', "argument to 'last' must be ARRAY, got INTEGER"),
+		    ('rest([1, 2, 3])', [2,3]),
+		    ('rest([])', None),
+		    ('push([], 1)', [1]),
+		    ('push(1, 1)', "first argument to 'push' must be ARRAY, got INTEGER")]
     
     for input, expected in tests:
         evaluated = evaluate(input)
         if type(expected) == int: check_integer_obj(evaluated, expected)
+        if type(expected) == list: check_array_obj(evaluated, expected)
         if type(expected) == str: check_error_message(evaluated, expected)
+        if type(expected) == None: check_null_obj(evaluated)
     
 def test_array_expression():
     test = '[1, 2 * 2, 3 + 3]'
@@ -201,16 +216,27 @@ def evaluate(input):
     return evaluator.eval(program, environment)
 
 def check_integer_obj(object: obj.Object, expected):
+    assert not type(object) == obj.Error, object.message
     assert type(object) == obj.Integer, (f'object is not Integer, got={type(object)}')
     assert object.value == expected, (f'object has wrong value. should be {expected}, got={object.value}')
 
 def check_boolean_obj(object: obj.Object, expected):
+    assert not type(object) == obj.Error, object.message
     assert type(object) == obj.Boolean, (f'object is not Boolean, got={type(object)}')
     assert object.value == expected, (f'object has wrong value. should be {expected}, got={object.value}')
 
 def check_null_obj(object: obj.Object):
+    assert not type(object) == obj.Error, object.message
     assert type(object) == obj.Null, (f'object is not Null, got={type(object)}')
 
 def check_error_message(object: obj.Object, expected: str):
     assert type(object) == obj.Error, (f'object is not Error, got={type(object)}')
     assert object.message ==  expected, (f'error message does not match. expected={expected}, got={object.message}')
+
+def check_array_obj(object: obj.Object, expected):
+    assert not type(object) == obj.Error, object.message
+    assert type(object) == obj.Array, (f'object is not Array, got={type(object)}')
+    assert len(object.elements) == len(expected), f'array.elements is not of same size. got={len(object.elements)}, expected={len(expected)}'
+    for element, expected_element in zip(object.elements, expected):
+        if type(expected_element) == obj.Integer: check_integer_obj(element, expected_element)
+        if type(expected_element) == obj.Array: check_array_obj(element, expected_element)

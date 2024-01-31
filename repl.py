@@ -1,4 +1,4 @@
-from simple_token import Lexer, EOF
+from simple_token import Lexer
 from simple_parser import Parser
 from simple_eval import Evaluator
 from object import Environment

@@ -7,7 +7,7 @@ FALSE = obj.Boolean(False)
 
 #TODO: this does not need to be a class
 class Evaluator():
-    def eval(self, node: simple_ast.Node, environment: obj.Environment) -> obj.Object:
+    def eval(self, node: simple_ast.Node, environment: obj.Environment):
         if type(node) == simple_ast.Program: return self.eval_statements(node.statements, environment)
         if type(node) == simple_ast.ExpressionStatement: return self.eval(node.expression, environment)
         if type(node) == simple_ast.IntegerLiteral: return obj.Integer(node.value)
@@ -75,7 +75,7 @@ class Evaluator():
     def eval_index_array_expression(self, array: obj.Array, index: obj.Integer):
         max = len(array.elements)
         print(f'array={len(array.elements)}, index={index.value}')
-        if index.value < 0 and index.value >= max: return None
+        if index.value < 0 or index.value >= max: return None
         return array.elements[index.value]
     
     def apply_function(self, function: obj.Object, args: list[obj.Object]):
@@ -84,7 +84,7 @@ class Evaluator():
             evaluated = self.eval(function.body, extended_environment)
             return self.unwrapped_return_value(evaluated)
         if type(function) == obj.Builtin: return function.builtin(args) 
-        else: return self.new_error(f'not a function: {type(function)}') 
+        else: return self.new_error(f'not a function: {function.type()}') 
     
     def extended_function_environment(self, function: obj.Function, args: list[obj.Object]):
         environment = obj.Environment(function.environment)
@@ -98,7 +98,6 @@ class Evaluator():
 
     def eval_let_statement(self, node: simple_ast.LetStatement, environment: obj.Environment):
         value = self.eval(node.value, environment)
-        print(type(value))
         if self.is_error(value): return value 
         environment.set(node.name.value, value)
     
