@@ -171,3 +171,22 @@ class CallExpression(Expression):
     def expressionNode(): pass
     def token_literal(self): return self.token.literal
     def string(self): return f'{self.function.string()}({", ".join(argument.string() for argument in self.arguments)})'
+
+class ArrayLiteral(Expression):
+    def __init__(self, token: Token):
+        self.token = token
+        self.elements = list[Expression]
+    
+    def expressionNode(): pass
+    def token_literal(self): return self.token.literal
+    def string(self): return f'[{", ".join(element.string() for element in self.elements)}]'
+
+class IndexExpression(Expression):
+    def __init__(self, token: Token, left: Expression):
+        self.token = token
+        self.left = left
+        self.index: Expression
+    
+    def expressionNode(): pass
+    def token_literal(self): return self.token.literal
+    def string(self): return f'({self.left.string()}[{self.index.string()}])'

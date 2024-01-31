@@ -22,6 +22,8 @@ class Evaluator():
         if type(node) == simple_ast.FunctionLiteral: return self.eval_function_literal(node, environment)
         if type(node) == simple_ast.CallExpression: return self.eval_call_expression(node, environment)
         if type(node) == simple_ast.StringLiteral: return obj.String(node.value)
+        if type(node) == simple_ast.ArrayLiteral: return self.eval_array_literals(node, environment)
+        if type(node) == simple_ast.IndexExpression: return self.eval_index_expression(node, environment)
         return None 
 
     def eval_statements(self, statements: list[simple_ast.Statement], environment: obj.Environment):
@@ -56,6 +58,25 @@ class Evaluator():
             if self.is_error(evaluated): return evaluated
             result.append(evaluated)
         return result
+    
+    def eval_array_literals(self, node: simple_ast.ArrayLiteral, environment: obj.Environment):
+        elements = self.eval_expressions(node.elements, environment)
+        if len(elements) == 1 and self.is_error(elements[0]): return elements[0]
+        return obj.Array(elements)
+
+    def eval_index_expression(self, node: simple_ast.IndexExpression, environment: obj.Environment):
+        left = self.eval(node.left, environment)
+        if self.is_error(left): return left
+        index = self.eval(node.index, environment)
+        if self.is_error(index): return index
+        if type(left) == obj.Array and type(index) == obj.Integer: return self.eval_index_array_expression(left, index)
+        return self.new_error(f'index operator not supported: {left.type()}')
+    
+    def eval_index_array_expression(self, array: obj.Array, index: obj.Integer):
+        max = len(array.elements)
+        print(f'array={len(array.elements)}, index={index.value}')
+        if index.value < 0 and index.value >= max: return None
+        return array.elements[index.value]
     
     def apply_function(self, function: obj.Object, args: list[obj.Object]):
         if type(function) == obj.Function:

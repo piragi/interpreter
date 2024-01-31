@@ -115,10 +115,10 @@ def test_let_statements():
 def test_function_object():
     test = "fn(x) { x + 2; };"
     evaluated = evaluate(test)
-    assert type(evaluated) == obj.Function, print(f'object is not Function, got={type(evaluated)}')
-    assert len(evaluated.parameters) == 1, print(f'function has wrong parameters, got={len(evaluated.parameters)}')
-    assert evaluated.parameters[0].string() == "x", print(f'parameter is not \'x\', got={evaluated.parameters[0].string()}')
-    assert evaluated.body.string() == "(x + 2)", print(f'body is not \'(x + 2)\', got={evaluated.body.string()}')
+    assert type(evaluated) == obj.Function, (f'object is not Function, got={type(evaluated)}')
+    assert len(evaluated.parameters) == 1, (f'function has wrong parameters, got={len(evaluated.parameters)}')
+    assert evaluated.parameters[0].string() == "x", (f'parameter is not \'x\', got={evaluated.parameters[0].string()}')
+    assert evaluated.body.string() == "(x + 2)", (f'body is not \'(x + 2)\', got={evaluated.body.string()}')
 
 def test_function_application():
     tests = [("let identity = fn(x) { x; }; identity(5);", 5),
@@ -145,14 +145,14 @@ addTwo(2);"""
 def test_string_literal():
     test = '"Hello World!"'
     evaluated = evaluate(test)
-    assert type(evaluated) == obj.String, print(f'object is not String, got={type(evaluated)}')
-    assert evaluated.value == "Hello World!", print(f'object has wrong value, should be {test}, got={evaluated.value}')
+    assert type(evaluated) == obj.String, (f'object is not String, got={type(evaluated)}')
+    assert evaluated.value == "Hello World!", (f'object has wrong value, should be {test}, got={evaluated.value}')
 
 def test_string_concatenation():
     test = '"Hello" + " " + "World!"'
     evaluated = evaluate(test)
-    assert type(evaluated) == obj.String, print(f'object is not String, got={type(evaluated)}')
-    assert evaluated.value == "Hello World!", print(f'object has wrong value, should be {test}, got={evaluated.value}')
+    assert type(evaluated) == obj.String, (f'object is not String, got={type(evaluated)}')
+    assert evaluated.value == "Hello World!", (f'object has wrong value, should be {test}, got={evaluated.value}')
 
 def test_builtin_len():
     tests = [('len("")', 0),
@@ -165,6 +165,32 @@ def test_builtin_len():
         evaluated = evaluate(input)
         if type(expected) == int: check_integer_obj(evaluated, expected)
         if type(expected) == str: check_error_message(evaluated, expected)
+    
+def test_array_expression():
+    test = '[1, 2 * 2, 3 + 3]'
+    evaluated = evaluate(test)
+    assert type(evaluated) == obj.Array, (f'object is not String, got={type(evaluated)}')
+    assert len(evaluated.elements) == 3, f'object has wrong number of elements. got={len(evaluated.elements)}'
+    check_integer_obj(evaluated.elements[0], 1)
+    check_integer_obj(evaluated.elements[1], 4)
+    check_integer_obj(evaluated.elements[2], 6)
+
+def test_array_index_expression():
+    tests = [( "[1, 2, 3][0]", 1,),
+            ( "[1, 2, 3][1]", 2,),
+            ( "[1, 2, 3][2]", 3,),
+            ( "let i = 0; [1][i];", 1,),
+            ( "[1, 2, 3][1 + 1];", 3,),
+            ( "let myArray = [1, 2, 3]; myArray[2];", 3,),
+            ( "let myArray = [1, 2, 3]; myArray[0] + myArray[1] + myArray[2];", 6,),
+            ( "let myArray = [1, 2, 3]; let i = myArray[0]; myArray[i]", 2,),
+            ( "[1, 2, 3][3]", None,),
+            ( "[1, 2, 3][-1]", None,)]
+
+    for input, expected in tests:
+        evaluated = evaluate(input)
+        if type(expected) == int: check_integer_obj(evaluated, expected)
+        if type(expected) == None: check_null_obj(evaluated)
 
 def evaluate(input):
     lexer = simple_token.Lexer(input)
@@ -175,16 +201,16 @@ def evaluate(input):
     return evaluator.eval(program, environment)
 
 def check_integer_obj(object: obj.Object, expected):
-    assert type(object) == obj.Integer, print(f'object is not Integer, got={type(object)}')
-    assert object.value == expected, print(f'object has wrong value. should be {expected}, got={object.value}')
+    assert type(object) == obj.Integer, (f'object is not Integer, got={type(object)}')
+    assert object.value == expected, (f'object has wrong value. should be {expected}, got={object.value}')
 
 def check_boolean_obj(object: obj.Object, expected):
-    assert type(object) == obj.Boolean, print(f'object is not Boolean, got={type(object)}')
-    assert object.value == expected, print(f'object has wrong value. should be {expected}, got={object.value}')
+    assert type(object) == obj.Boolean, (f'object is not Boolean, got={type(object)}')
+    assert object.value == expected, (f'object has wrong value. should be {expected}, got={object.value}')
 
 def check_null_obj(object: obj.Object):
-    assert type(object) == obj.Null, print(f'object is not Null, got={type(object)}')
+    assert type(object) == obj.Null, (f'object is not Null, got={type(object)}')
 
 def check_error_message(object: obj.Object, expected: str):
-    assert type(object) == obj.Error, print(f'object is not Error, got={type(object)}')
-    assert object.message ==  expected, print(f'error message does not match. expected={expected}, got={object.message}')
+    assert type(object) == obj.Error, (f'object is not Error, got={type(object)}')
+    assert object.message ==  expected, (f'error message does not match. expected={expected}, got={object.message}')

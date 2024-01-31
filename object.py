@@ -9,6 +9,7 @@ ERROR = 'ERROR'
 FUNCTION_OBJ = 'FUNCTION'
 STRING_OBJ = 'STRING'
 BUILTIN_OBJ = 'BUILTIN'
+ARRAY_OBJ = 'ARRAY'
 
 class Object():
     def type(): raise NotImplementedError('Subclass should implement type() function')
@@ -66,3 +67,8 @@ class String(Object):
     def __init__(self, value: str): self.value = value
     def inspect(self): return self.value
     def type(self): return STRING_OBJ
+
+class Array(Object):
+    def __init__(self, elements: list[simple_ast.Expression]): self.elements = elements
+    def inspect(self): return f'[{', '.join(str(element) for element in self.elements)}]'
+    def type(self): return ARRAY_OBJ

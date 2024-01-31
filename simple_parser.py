@@ -3,8 +3,8 @@ from simple_ast import Program
 import simple_token
 from simple_token import Lexer, Token
 
-PRECEDENCE = {"_": 0, "LOWEST": 1, "EQUALS": 2, "LESSGREATER": 3, "SUM": 4, "PRODUCT": 5, "PREFIX": 6, "CALL": 7}
-OP_PRECEDENCES = {"EQ": "EQUALS", "NEQ": "EQUALS", "LT": "LESSGREATER", "GT": "LESSGREATER", "MINUS": "SUM", "PLUS": "SUM", "SLASH": "PRODUCT", "ASTERISK": "PRODUCT", "LPAREN": "CALL"}
+PRECEDENCE = {"_": 0, "LOWEST": 1, "EQUALS": 2, "LESSGREATER": 3, "SUM": 4, "PRODUCT": 5, "PREFIX": 6, "CALL": 7, "INDEX": 8}
+OP_PRECEDENCES = {"EQ": "EQUALS", "NEQ": "EQUALS", "LT": "LESSGREATER", "GT": "LESSGREATER", "MINUS": "SUM", "PLUS": "SUM", "SLASH": "PRODUCT", "ASTERISK": "PRODUCT", "LPAREN": "CALL", "LBRACKET": "INDEX"}
 
 class Parser():
     def __init__(self, lexer: Lexer):
@@ -25,6 +25,7 @@ class Parser():
         self.register_prefix("IF", self.parse_if_expression)
         self.register_prefix("FUNCTION", self.parse_function_literal)
         self.register_prefix("STRING", self.parse_string_literal)
+        self.register_prefix("LBRACKET", self.parse_array_literal)
 
         self.register_infix("EQ", self.parse_infix_expression)
         self.register_infix("NEQ", self.parse_infix_expression)
@@ -35,6 +36,7 @@ class Parser():
         self.register_infix("SLASH", self.parse_infix_expression)
         self.register_infix("ASTERISK", self.parse_infix_expression)
         self.register_infix("LPAREN", self.parse_call_expression)
+        self.register_infix("LBRACKET", self.parse_index_expression)
 
         self.next_token()
         self.next_token()    
@@ -97,6 +99,33 @@ class Parser():
     def parse_integer_literal(self): return simple_ast.IntegerLiteral(self.current_token, int(self.current_token.literal))
     def parse_identifier(self): return simple_ast.Identifier(self.current_token, self.current_token.literal)
     def parse_string_literal(self): return simple_ast.StringLiteral(self.current_token, self.current_token.literal)
+
+    def parse_array_literal(self):
+        array = simple_ast.ArrayLiteral(self.current_token)
+        array.elements = self.parse_expression_list("RBRACKET")
+        return array
+    
+    def parse_expression_list(self, token_type: str):
+        expressions = [] #TODO: add typing
+        if self.peek_token.type == token_type:
+            self.next_token()
+            return expressions
+        
+        self.next_token()
+        expressions.append(self.parse_expression(PRECEDENCE["LOWEST"]))
+        while self.peek_token.type == "COMMA":
+            self.next_token()
+            self.next_token()
+            expressions.append(self.parse_expression(PRECEDENCE["LOWEST"]))
+        if not self.expect_peek(token_type): return None
+        return expressions
+
+    def parse_index_expression(self, left: simple_ast.Expression):
+        index_expression = simple_ast.IndexExpression(self.current_token, left)
+        self.next_token()
+        index_expression.index = self.parse_expression(PRECEDENCE["LOWEST"])
+        if not self.expect_peek("RBRACKET"): return None
+        return index_expression
 
     def parse_expression(self, precedence: int):
         if self.current_token.type not in self.prefix_parse_fn:
@@ -187,26 +216,9 @@ class Parser():
     
     def parse_call_expression(self, function):
         expression = simple_ast.CallExpression(self.current_token, function)
-        expression.arguments = self.parse_call_arguments()
+        expression.arguments = self.parse_expression_list("RPAREN")
         return expression
     
-    def parse_call_arguments(self):
-        arguments = []
-
-        if self.peek_token.type == "RPAREN": 
-            self.next_token()
-            return arguments
-        
-        self.next_token()
-        arguments.append(self.parse_expression(PRECEDENCE["LOWEST"]))
-        while self.peek_token.type == "COMMA":
-            self.next_token()
-            self.next_token()
-            arguments.append(self.parse_expression(PRECEDENCE["LOWEST"]))
-        if not self.expect_peek("RPAREN"): return None
-        return arguments
-
-
     def expect_peek(self, expected: str):
         if self.peek_token.type is expected:
             self.next_token()

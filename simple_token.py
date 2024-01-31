@@ -12,6 +12,8 @@ COMMA = ","
 SEMICOLON = ";"
 LPAREN    = "("
 RPAREN    = ")"
+LBRACKET  = "["
+RBRACKET  = "]"
 LBRACE    = "{"
 RBRACE    = "}"
 ASSIGN    = "="
@@ -68,6 +70,8 @@ class Lexer:
         elif self.char == "\"": token = Token("STRING", self.read_string())
         elif self.char == "(": token = Token("LPAREN", "(")
         elif self.char == ")": token = Token("RPAREN", ")")
+        elif self.char == "[": token = Token("LBRACKET", "[")
+        elif self.char == "]": token = Token("RBRACKET", "]")
         elif self.char == "{": token = Token("LBRACE", "{")
         elif self.char == "}": token = Token("RBRACE", "}")
         elif self.char == ",": token = Token("COMMA", ",")

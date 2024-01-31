@@ -142,7 +142,9 @@ def test_operator_precedence():
     "(5 + 5) * 2",
     "2 / (5 + 5)",
     "-(5 + 5)",
-    "!(true == true)"]
+    "!(true == true)",
+    "a * [1, 2, 3, 4][b * c] * d",
+    "add(a * b[2], b[1], 2 * [1, 2][1])"]
 
     test_expected = [
     "((-a) * b)",
@@ -165,8 +167,9 @@ def test_operator_precedence():
     "((5 + 5) * 2)",
     "(2 / (5 + 5))",
     "(-(5 + 5))",
-    "(!(true == true))"]
-
+    "(!(true == true))",
+    "((a * ([1, 2, 3, 4][(b * c)])) * d)",
+    "add((a * (b[2])), (b[1]), (2 * ([1, 2][1])))"]
 
     for input, expected in zip(test_input, test_expected):
         lexer = simple_token.Lexer(input)
@@ -248,6 +251,52 @@ def test_string_literals():
     assert type(statement) == simple_ast.ExpressionStatement, f'program.statements[0] is not ExpressionStatement, got={type(statement)}'
     assert type(statement.expression) == simple_ast.StringLiteral, f'statement.expression is not StringLiteral, got={type(statement.expression)}'
     assert statement.expression.value == "hello world", f'literal.value is not {test_input}, got={statement.expression.value}'
+
+def test_array_literals():
+    test_input = "[1, 2 * 2, 3 + 3]"
+
+    lexer = simple_token.Lexer(test_input)
+    parser = simple_parser.Parser(lexer)
+    program = parser.parse_program()
+    statement = program.statements[0]
+    check_parser_errors(parser.errors)
+
+    assert len(program.statements) == 1, f'program.statements does not contain 1 statements, got={len(program.statments)}'
+    assert type(statement) == simple_ast.ExpressionStatement, f'program.statements[0] is not ExpressionStatement, got={type(statement)}'
+    assert type(statement.expression) == simple_ast.ArrayLiteral, f'statement.expression is not ArrayLiteral, got={type(statement.expression)}'
+    assert len(statement.expression.elements) == 3, f'array.elements does not contain 3 elements, got={len(statement.expression.elements)}'
+    assert integer_literal(statement.expression.elements[0], 1), f'integer does not match, got={statement.expression.elements[0].value}'
+    assert infix_expression(statement.expression.elements[1], 2, "*", 2), f'infix does not match, got={statement.expression.elements[1].left} {statement.expression.elements[1].operator} {statement.expression.elements[1].right}'
+    assert infix_expression(statement.expression.elements[2], 3, "+", 3), f'infix does not match, got={statement.expression.elements[2].left} {statement.expression.elements[2].operator} {statement.expression.elements[2].right}'
+
+def test_array_literal_empty():
+    test_input = "[]"
+
+    lexer = simple_token.Lexer(test_input)
+    parser = simple_parser.Parser(lexer)
+    program = parser.parse_program()
+    statement = program.statements[0]
+    check_parser_errors(parser.errors)
+
+    assert len(program.statements) == 1, f'program.statements does not contain 1 statements, got={len(program.statments)}'
+    assert type(statement) == simple_ast.ExpressionStatement, f'program.statements[0] is not ExpressionStatement, got={type(statement)}'
+    assert type(statement.expression) == simple_ast.ArrayLiteral, f'statement.expression is not ArrayLiteral, got={type(statement.expression)}'
+    assert len(statement.expression.elements) == 0, f'array.elements does not contain 0 elements, got={len(statement.expression.elements)}'
+
+def test_index_expression():
+    test_input = "myArray[1 + 1]"
+
+    lexer = simple_token.Lexer(test_input)
+    parser = simple_parser.Parser(lexer)
+    program = parser.parse_program()
+    statement = program.statements[0]
+    check_parser_errors(parser.errors)
+
+    assert len(program.statements) == 1, f'program.statements does not contain 1 statements, got={len(program.statments)}'
+    assert type(statement) == simple_ast.ExpressionStatement, f'program.statements[0] is not ExpressionStatement, got={type(statement)}'
+    assert type(statement.expression) == simple_ast.IndexExpression, f'statement.expression is not IndexExpression, got={type(statement.expression)}'
+    assert identifier(statement.expression.left, "myArray"), f'index_element.left does not match, got={statement.expression.left}'
+    assert infix_expression(statement.expression.index, 1, "+", 1), f'index_element.left does not match, got={statement.expression.left.string()}'
 
 def function_with_params(test_input, parameters):
     lexer = simple_token.Lexer(test_input)
