@@ -11,13 +11,13 @@ def builtin_first(args: list[obj.Object]) -> obj.Object:
     if len(args) != 1: return obj.Error(f'wrong number of arguments. got={len(args)}, want=1')
     if type(args[0]) is not obj.Array: return obj.Error(f'argument to \'first\' must be ARRAY, got {args[0].type()}')
     elif len(args[0].elements) > 0: return args[0].elements[0]
-    return None
+    return simple_eval.NULL
 
 def builtin_last(args: list[obj.Object]) -> obj.Object:
     if len(args) != 1: return obj.Error(f'wrong number of arguments. got={len(args)}, want=1')
     if type(args[0]) is not obj.Array: return obj.Error(f'argument to \'last\' must be ARRAY, got {args[0].type()}')
     elif len(args[0].elements) > 0: return args[0].elements[len(args[0].elements)-1]
-    return None
+    return simple_eval.NULL
 
 def builtin_rest(args: list[obj.Object]) -> obj.Object:
     if len(args) != 1: return obj.Error(f'wrong number of arguments. got={len(args)}, want=1')
@@ -26,7 +26,7 @@ def builtin_rest(args: list[obj.Object]) -> obj.Object:
         copy = []
         for element in args[0].elements[1:]: copy.append(element)
         return obj.Array(copy)
-    return None
+    return simple_eval.NULL
 
 def builtin_push(args: list[obj.Object]) -> obj.Object:
     if len(args) != 2: return obj.Error(f'wrong number of arguments. got={len(args)}, want=2')
@@ -35,12 +35,18 @@ def builtin_push(args: list[obj.Object]) -> obj.Object:
     elif len(args[0].elements) >= 0:
         args[0].elements.append(args[1])
         return args[0]
-    return None
+    return simple_eval.NULL
+
+def builtin_puts(args: list[obj.Object]) -> obj.Object:
+    for arg in args:
+        print(arg.inspect())
+    return simple_eval.NULL
 
 functions = {
     "len": obj.Builtin(builtin_len),
     "first": obj.Builtin(builtin_first),
     "last": obj.Builtin(builtin_last),
     "rest": obj.Builtin(builtin_rest),
-    "push": obj.Builtin(builtin_push)
+    "push": obj.Builtin(builtin_push),
+    "puts": obj.Builtin(builtin_puts)
     }

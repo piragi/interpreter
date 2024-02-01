@@ -41,6 +41,7 @@ if (5 < 10) {
 "foobar"
 "foo bar"
 [1, 2];
+{"foo": "bar"}
 """
     assert_input = [Token("LET", "let"),
         Token("IDENT", "five"),
@@ -123,6 +124,11 @@ if (5 < 10) {
         Token("INT", "2"),
         Token("RBRACKET", "]"),
         Token("SEMICOLON", ";"),
+        Token("LBRACE", "{"),
+        Token("STRING", "foo"),
+        Token("COLON", ":"),
+        Token("STRING", "bar"),
+        Token("RBRACE", "}"),
         Token("EOF", ""),
     ]
 

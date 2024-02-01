@@ -298,6 +298,103 @@ def test_index_expression():
     assert identifier(statement.expression.left, "myArray"), f'index_element.left does not match, got={statement.expression.left}'
     assert infix_expression(statement.expression.index, 1, "+", 1), f'index_element.left does not match, got={statement.expression.left.string()}'
 
+def test_hash_literal_string_keys():
+    test_input = '{"one": 1, "two": 2, "three": 3}'
+    expected_dictionary = {"one": 1, "two": 2, "three": 3}
+
+    lexer = simple_token.Lexer(test_input)
+    parser = simple_parser.Parser(lexer)
+    program = parser.parse_program()
+    statement = program.statements[0]
+    check_parser_errors(parser.errors)
+
+    assert len(program.statements) == 1, f'program.statements does not contain 1 statements, got={len(program.statments)}'
+    assert type(statement) == simple_ast.ExpressionStatement, f'program.statements[0] is not ExpressionStatement, got={type(statement)}'
+    assert type(statement.expression) == simple_ast.HashLiteral, f'statement.expression is not HashLiteral, got={type(statement.expression)}'
+    dictionary = statement.expression.dict
+    assert len(dictionary) == 3, f'dictionary length does not match, got={len(dictionary)}'
+    for (key, value), (expected_key, expected_value) in zip(dictionary.items(), expected_dictionary.items()):
+        assert type(key) == simple_ast.StringLiteral, f'dictionary.key is not StringLiteral, got={type(key)}'
+        assert expected_dictionary[key.value] == expected_value, f'dictionary.key not as expected, got={key}'
+        assert integer_literal(dictionary[key], expected_value)
+
+def test_hash_literal_integer_keys():
+    test_input = '{1: 1, 2: 2, 3: 3}'
+    expected_dictionary = {1: 1, 2: 2, 3: 3}
+
+    lexer = simple_token.Lexer(test_input)
+    parser = simple_parser.Parser(lexer)
+    program = parser.parse_program()
+    statement = program.statements[0]
+    check_parser_errors(parser.errors)
+
+    assert len(program.statements) == 1, f'program.statements does not contain 1 statements, got={len(program.statments)}'
+    assert type(statement) == simple_ast.ExpressionStatement, f'program.statements[0] is not ExpressionStatement, got={type(statement)}'
+    assert type(statement.expression) == simple_ast.HashLiteral, f'statement.expression is not HashLiteral, got={type(statement.expression)}'
+    dictionary = statement.expression.dict
+    assert len(dictionary) == 3, f'dictionary length does not match, got={len(dictionary)}'
+    for (key, value), (expected_key, expected_value) in zip(dictionary.items(), expected_dictionary.items()):
+        assert type(key) == simple_ast.IntegerLiteral, f'dictionary.key is not IntegerLiteral, got={type(key)}'
+        assert expected_dictionary[key.value] == expected_value, f'dictionary.key not as expected, got={key}'
+        assert integer_literal(dictionary[key], expected_value)
+
+def test_hash_literal_boolean_keys():
+    test_input = '{"true": 1, "false": 2}'
+    expected_dictionary = {True: 1, False: 2}
+
+    lexer = simple_token.Lexer(test_input)
+    parser = simple_parser.Parser(lexer)
+    program = parser.parse_program()
+    statement = program.statements[0]
+    check_parser_errors(parser.errors)
+
+    assert len(program.statements) == 1, f'program.statements does not contain 1 statements, got={len(program.statments)}'
+    assert type(statement) == simple_ast.ExpressionStatement, f'program.statements[0] is not ExpressionStatement, got={type(statement)}'
+    assert type(statement.expression) == simple_ast.HashLiteral, f'statement.expression is not HashLiteral, got={type(statement.expression)}'
+    dictionary = statement.expression.dict
+    assert len(dictionary) == 3, f'dictionary length does not match, got={len(dictionary)}'
+    for (key, value), (expected_key, expected_value) in zip(dictionary.items(), expected_dictionary.items()):
+        assert type(key) == simple_ast.Boolean, f'dictionary.key is not Boolean, got={type(key)}'
+        assert expected_dictionary[key.value] == expected_value, f'dictionary.key not as expected, got={key}'
+        assert integer_literal(dictionary[key], expected_value)
+
+    
+def test_hash_literal_boolean_keys():
+    test_input = '{"one": 0 + 1, "two": 10 - 8, "three": 15 / 5}'
+    expected_dictionary = {"one": lambda e: infix_expression(e, 0, "+", 1),
+                           "two": lambda e: infix_expression(e, 10, "-", 8), 
+                           "three": lambda e: infix_expression(e, 15, "/", 5)}
+
+    lexer = simple_token.Lexer(test_input)
+    parser = simple_parser.Parser(lexer)
+    program = parser.parse_program()
+    statement = program.statements[0]
+    check_parser_errors(parser.errors)
+
+    assert len(program.statements) == 1, f'program.statements does not contain 1 statements, got={len(program.statments)}'
+    assert type(statement) == simple_ast.ExpressionStatement, f'program.statements[0] is not ExpressionStatement, got={type(statement)}'
+    assert type(statement.expression) == simple_ast.HashLiteral, f'statement.expression is not HashLiteral, got={type(statement.expression)}'
+    dictionary = statement.expression.dict
+    assert len(dictionary) == 3, f'dictionary length does not match, got={len(dictionary)}'
+    for key, value in dictionary.items():
+        assert type(key) == simple_ast.StringLiteral, f'dictionary.key is not StringLiteral, got={type(key)}'
+        test = expected_dictionary.get(key.value)
+        assert test is not None, f'dictionary.key not as expected, got={key}'
+        assert test(value)
+
+def test_empty_hash_literal():
+    test_input = '{}'
+    lexer = simple_token.Lexer(test_input)
+    parser = simple_parser.Parser(lexer)
+    program = parser.parse_program()
+    statement = program.statements[0]
+    check_parser_errors(parser.errors)
+
+    assert len(program.statements) == 1, f'program.statements does not contain 1 statements, got={len(program.statments)}'
+    assert type(statement) == simple_ast.ExpressionStatement, f'program.statements[0] is not ExpressionStatement, got={type(statement)}'
+    assert type(statement.expression) == simple_ast.HashLiteral, f'statement.expression is not HashLiteral, got={type(statement.expression)}'
+    assert len(statement.expression.dict) == 0, f'dictionary length does not match, got={len(statement.expression.dict)}'
+
 def function_with_params(test_input, parameters):
     lexer = simple_token.Lexer(test_input)
     parser = simple_parser.Parser(lexer)

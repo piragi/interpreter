@@ -26,6 +26,7 @@ class Parser():
         self.register_prefix("FUNCTION", self.parse_function_literal)
         self.register_prefix("STRING", self.parse_string_literal)
         self.register_prefix("LBRACKET", self.parse_array_literal)
+        self.register_prefix("LBRACE", self.parse_hash_literal)
 
         self.register_infix("EQ", self.parse_infix_expression)
         self.register_infix("NEQ", self.parse_infix_expression)
@@ -99,6 +100,21 @@ class Parser():
     def parse_integer_literal(self): return simple_ast.IntegerLiteral(self.current_token, int(self.current_token.literal))
     def parse_identifier(self): return simple_ast.Identifier(self.current_token, self.current_token.literal)
     def parse_string_literal(self): return simple_ast.StringLiteral(self.current_token, self.current_token.literal)
+
+    def parse_hash_literal(self):
+        hash_literal = simple_ast.HashLiteral(self.current_token)
+        hash_literal.dict = {}
+
+        while not self.peek_token.type == "RBRACE":
+            self.next_token()
+            key = self.parse_expression(PRECEDENCE["LOWEST"])
+            if not self.expect_peek("COLON"): return None
+            self.next_token()
+            value = self.parse_expression(PRECEDENCE["LOWEST"])
+            hash_literal.dict[key] = value
+            if not self.peek_token.type == "RBRACE" and not self.expect_peek("COMMA"): return None
+        if not self.expect_peek("RBRACE"): return None
+        return hash_literal
 
     def parse_array_literal(self):
         array = simple_ast.ArrayLiteral(self.current_token)

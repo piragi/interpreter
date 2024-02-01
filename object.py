@@ -10,20 +10,23 @@ FUNCTION_OBJ = 'FUNCTION'
 STRING_OBJ = 'STRING'
 BUILTIN_OBJ = 'BUILTIN'
 ARRAY_OBJ = 'ARRAY'
+HASH_OBJ = 'HASH'
 
 class Object():
     def type(): raise NotImplementedError('Subclass should implement type() function')
-    def inspect(self): return f'{self.value}' 
+    def inspect(self): return f'{self.value}'
 
 class Integer(Object):
     def __init__(self, value: int): self.value = value
     def type(self): return INTEGER_OBJ
     def inspect(self): return str(self.value)
+    def hashkey(self): return hash(('int', self.value))
 
 class Boolean(Object):
     def __init__(self, value: bool): self.value = value
     def type(self): return BOOLEAN_OBJ
     def inspect(self): return str(self.value)
+    def hashkey(self): return hash(('bool', self.value))
 
 class Null(Object):
     def inspect(self): return 'null'
@@ -69,8 +72,21 @@ class String(Object):
     def __init__(self, value: str): self.value = value
     def inspect(self): return self.value
     def type(self): return STRING_OBJ
+    def hashkey(self): return hash(('str', self.value))
 
 class Array(Object):
     def __init__(self, elements: list[simple_ast.Expression]): self.elements = elements
     def inspect(self): return f'[{', '.join(element.inspect() for element in self.elements)}]'
     def type(self): return ARRAY_OBJ
+
+class HashPair():
+    def __init__(self, key: Object, value: Object):
+        self.key = key
+        self.value = value
+    
+class Hash():
+    def __init__(self): self.dict: dict[int, HashPair] = {}
+    def type(self): return HASH_OBJ
+    def inspect(self): return f'{{{', '.join(f'{hashpair.key.inspect()}: {hashpair.value.inspect()}' for _, hashpair in self.dict.items())}}}'
+
+Hashable = Integer | Boolean | String

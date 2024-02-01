@@ -24,6 +24,7 @@ class Evaluator():
         if type(node) == simple_ast.StringLiteral: return obj.String(node.value)
         if type(node) == simple_ast.ArrayLiteral: return self.eval_array_literals(node, environment)
         if type(node) == simple_ast.IndexExpression: return self.eval_index_expression(node, environment)
+        if type(node) == simple_ast.HashLiteral: return self.eval_hash_literal(node, environment)
         return None 
 
     def eval_statements(self, statements: list[simple_ast.Statement], environment: obj.Environment):
@@ -59,6 +60,19 @@ class Evaluator():
             result.append(evaluated)
         return result
     
+    def eval_hash_literal(self, node: simple_ast.HashLiteral, environment: obj.Environment):
+        hash_dict = obj.Hash()
+        for key_node, value_node in node.dict.items():
+            key = self.eval(key_node, environment)
+            if self.is_error(key): return key
+            if not isinstance(key, obj.Hashable): return self.new_error(f'object type not supported for key, got={key.type()}')
+            key_hash = key.hashkey()
+            value = self.eval(value_node, environment)
+            if self.is_error(value): return value
+
+            hash_dict.dict[key_hash] = obj.HashPair(key, value)
+        return hash_dict
+    
     def eval_array_literals(self, node: simple_ast.ArrayLiteral, environment: obj.Environment):
         elements = self.eval_expressions(node.elements, environment)
         if len(elements) == 1 and self.is_error(elements[0]): return elements[0]
@@ -70,6 +84,7 @@ class Evaluator():
         index = self.eval(node.index, environment)
         if self.is_error(index): return index
         if type(left) == obj.Array and type(index) == obj.Integer: return self.eval_index_array_expression(left, index)
+        if type(left) == obj.Hash and isinstance(index, obj.Hashable): return self.eval_index_hash_expression(left, index)
         return self.new_error(f'index operator not supported: {left.type()}')
     
     def eval_index_array_expression(self, array: obj.Array, index: obj.Integer):
@@ -77,6 +92,11 @@ class Evaluator():
         print(f'array={len(array.elements)}, index={index.value}')
         if index.value < 0 or index.value >= max: return None
         return array.elements[index.value]
+    
+    def eval_index_hash_expression(self, hash_dict: obj.Hash, index: obj.Hashable):
+        pair = hash_dict.dict.get(index.hashkey())
+        if pair is None: return NULL
+        return pair.value
     
     def apply_function(self, function: obj.Object, args: list[obj.Object]):
         if type(function) == obj.Function:
@@ -173,4 +193,6 @@ class Evaluator():
 
     def new_error(self, message: str): return obj.Error(message)
 
-    def is_error(self, object: obj.Object): object.type() == obj.ERROR if object is not None else False
+    def is_error(self, object: obj.Object): 
+        if object.type() == obj.ERROR or object is None: return True
+        else: False

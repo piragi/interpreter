@@ -207,6 +207,50 @@ def test_array_index_expression():
         if type(expected) == int: check_integer_obj(evaluated, expected)
         if type(expected) == None: check_null_obj(evaluated)
 
+def test_hash_literals():
+    test = """let two = "two";
+    {
+        "one": 10 - 9,
+        two: 1 + 1,
+        "thr" + "ee": 6 / 2,
+        4: 4,
+        true: 5,
+        false: 6
+    }"""
+
+    expected = {obj.String("one").hashkey(): 1,
+                obj.String("two").hashkey(): 2,
+                obj.String("three").hashkey(): 3,
+                obj.Integer(4).hashkey(): 4,
+                obj.Boolean(True).hashkey(): 5,
+                obj.Boolean(False).hashkey(): 6}
+
+    evaluated = evaluate(test)
+    assert type(evaluated) == obj.Hash, f'evaluated is not of type Hash, got={type(evaluated)}'
+    assert len(evaluated.dict) == len(expected), f'evaluated has not the same amount of elements, got={len(evaluated.dict)}'
+    print(evaluated.inspect())
+    for key, value in expected.items():
+        evaluated_value = evaluated.dict.get(key)
+        assert evaluated_value is not None, f'key is not inside dict'
+        assert type(evaluated_value) == obj.HashPair, f'dict element is not of type HashPair, got={type(value)}'
+        check_integer_obj(evaluated_value.value, value)
+
+def test_hash_index_expressions():
+    tests = [
+        ( '{"foo": 5}["foo"]', 5, ),
+        ( '{"foo": 5}["bar"]', None, ),
+        ( 'let key = "foo"; {"foo": 5}[key]', 5, ),
+        ( '{}["foo"]', None, ),
+        ( '{5: 5}[5]', 5, ),
+        ( '{true: 5}[true]', 5, ),
+        ( '{false: 5}[false]', 5, )]
+
+    for input, expected in tests:
+        print(f'current input = {input}')
+        evaluated = evaluate(input)
+        if type(expected) == int: check_integer_obj(evaluated, expected)
+        if type(expected) == None: check_null_obj(evaluated)
+
 def evaluate(input):
     lexer = simple_token.Lexer(input)
     parser = simple_parser.Parser(lexer)

@@ -16,6 +16,7 @@ LBRACKET  = "["
 RBRACKET  = "]"
 LBRACE    = "{"
 RBRACE    = "}"
+COLON     = ":"
 ASSIGN    = "="
 PLUS      = "+"
 MINUS     = "-"
@@ -76,6 +77,7 @@ class Lexer:
         elif self.char == "}": token = Token("RBRACE", "}")
         elif self.char == ",": token = Token("COMMA", ",")
         elif self.char == ";": token = Token("SEMICOLON", ";")
+        elif self.char == ":": token = Token("COLON", ":")
         elif self.char == "-": token = Token("MINUS", "-")
         elif self.char == "!":
             if self.peek_char() == "=":

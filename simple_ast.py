@@ -190,3 +190,12 @@ class IndexExpression(Expression):
     def expressionNode(): pass
     def token_literal(self): return self.token.literal
     def string(self): return f'({self.left.string()}[{self.index.string()}])'
+
+class HashLiteral(Expression):
+    def __init__(self, token: Token): 
+        self.token = token
+        self.dict = dict[Expression,Expression]
+    def expressionNode(): pass
+    def token_literal(self): return self.token.literal
+    def string(self): return f'{{{', '.join(f'{key.string()}: {value.string()}' for (key, value) in self.dict.items())}}}'
+        
